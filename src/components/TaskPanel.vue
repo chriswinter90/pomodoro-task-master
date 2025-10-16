@@ -27,7 +27,7 @@
             />
           </template>
         </v-list-item>
-        <v-divider></v-divider>
+        <v-divider />
       </template>
 
       <v-list-item class="d-flex ">
