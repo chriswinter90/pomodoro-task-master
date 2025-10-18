@@ -36,6 +36,13 @@ export const useTaskStore = defineStore('tasks', {
     removeTask(id: string) {
       this.tasks = this.tasks.filter(task => task.id !== id)
     },
+    editTask(id: string, task: CreateTaskPayload) {
+      const taskIndex = this.tasks.findIndex(task => task.id === id)
+      if (taskIndex !== -1) {
+        this.tasks[taskIndex]!.title = task.title
+        this.tasks[taskIndex]!.description = task.description
+      }
+    },
     setCompletedAt(id: string, value: boolean) {
       const task = this.tasks.find(task => task.id === id)
       if (task) {

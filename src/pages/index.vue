@@ -6,7 +6,7 @@
 </template>
 
 <script lang="ts" setup>
-  import TaskPanel from '@/components/TaskPanel.vue'
+  import TaskPanel from '@/components/TaskPanel/TaskPanel.vue'
 
   const showPanel = ref(false)
 </script>

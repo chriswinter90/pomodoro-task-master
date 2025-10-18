@@ -8,10 +8,10 @@ export {}
 /* prettier-ignore */
 declare module 'vue' {
   export interface GlobalComponents {
-    AddTaskPanel: typeof import('./components/AddTaskPanel.vue')['default']
+    AddTaskPanel: typeof import('./components/TaskPanel/AddTaskPanel.vue')['default']
     AppFooter: typeof import('./components/AppFooter.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
-    TaskPanel: typeof import('./components/TaskPanel.vue')['default']
+    TaskPanel: typeof import('./components/TaskPanel/TaskPanel.vue')['default']
   }
 }
