@@ -3,10 +3,12 @@
     @add-task="showPanel = true"
   />
   <add-task-panel v-model="showPanel" />
+  <TimerPanel />
 </template>
 
 <script lang="ts" setup>
   import TaskPanel from '@/components/TaskPanel/TaskPanel.vue'
+  import TimerPanel from '@/components/TimerPanel/TimerPanel.vue'
 
   const showPanel = ref(false)
 </script>
