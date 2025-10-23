@@ -12,6 +12,7 @@ declare module 'vue' {
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     TaskPanel: typeof import('./components/TaskPanel/TaskPanel.vue')['default']
+    TimerBlock: typeof import('./components/TimerPanel/TimerBlock.vue')['default']
     TimerPanel: typeof import('./components/TimerPanel/TimerPanel.vue')['default']
   }
 }

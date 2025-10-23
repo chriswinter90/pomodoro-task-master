@@ -1,9 +1,12 @@
 <template>
-  <TaskPanel
-    @add-task="showPanel = true"
-  />
-  <add-task-panel v-model="showPanel" />
-  <TimerPanel />
+  <div class="page-container">
+    <TaskPanel
+      class="mb-8"
+      @add-task="showPanel = true"
+    />
+    <add-task-panel v-model="showPanel" />
+    <TimerPanel />
+  </div>
 </template>
 
 <script lang="ts" setup>
@@ -14,6 +17,10 @@
 </script>
 
 <style scoped lang="scss">
+  .page-container {
+    height: 100vh;
+    width: 100vw;
+  }
   .task-panel {
     width: 100%;
   }

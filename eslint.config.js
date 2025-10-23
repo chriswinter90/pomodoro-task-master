@@ -5,5 +5,6 @@ export default vuetify({
     '@stylistic/space-before-function-paren': 'off',
     'vue/attributes-order': 'off',
     'perfectionist/sort-imports': 'off',
+    'curly': 'off',
   },
 })

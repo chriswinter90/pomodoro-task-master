@@ -55,10 +55,6 @@
 </script>
 
 <style scoped lang="scss">
-  .task-panel {
-    width: 100%;
-    height: 100%;
-  }
   .v-list-item :deep(.v-list-item__content) {
     width: -webkit-fill-available;
   }
