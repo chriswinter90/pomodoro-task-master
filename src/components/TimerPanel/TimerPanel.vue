@@ -8,28 +8,36 @@
         <v-icon>mdi-plus</v-icon>
       </v-btn>
     </div>
-    <div class="controls d-flex flex-row justify-center">
-      <v-btn color="green">Start</v-btn>
-      <v-btn color="red">Stop</v-btn>
-      <v-btn color="warning">Reset</v-btn>
-    </div>
+    <TimerControls
+      @start="currentTimer.startTimer()"
+      @stop="currentTimer.stopTimer()"
+      @reset="currentTimer.resetTimer()"
+    />
+    <TimerDisplay
+      v-if="currentTimer"
+      :elapsed-seconds="currentTimer.elapsedSeconds.value"
+      :duration="currentTimer.duration.value"
+      :display-time-string="currentTimer.displayTimeString.value"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
   import { useTimersStore } from '@/stores/timers.ts'
+  import { useTimer } from '@/components/composables/timer.ts'
 
   const timers = useTimersStore()
 
+  let currentTimer = useTimer(0)
+
+  watch(() => timers.selectedTimer, selectedTimer => {
+    if (selectedTimer) currentTimer = useTimer(selectedTimer.duration, selectedTimer.id)
+  })
 </script>
 
 <style scoped lang="scss">
   .timer-list > * {
     width: 100px;
     margin-right: 10px;
-  }
-  .controls > * {
-    width: 100px;
-    margin: 0 10px;
   }
 </style>

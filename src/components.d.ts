@@ -13,6 +13,8 @@ declare module 'vue' {
     RouterView: typeof import('vue-router')['RouterView']
     TaskPanel: typeof import('./components/TaskPanel/TaskPanel.vue')['default']
     TimerBlock: typeof import('./components/TimerPanel/TimerBlock.vue')['default']
+    TimerControls: typeof import('./components/TimerPanel/TimerControls.vue')['default']
+    TimerDisplay: typeof import('./components/TimerPanel/TimerDisplay.vue')['default']
     TimerPanel: typeof import('./components/TimerPanel/TimerPanel.vue')['default']
   }
 }

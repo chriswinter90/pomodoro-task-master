@@ -6,6 +6,8 @@ export function displayTime(time: number) {
   return `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`
 }
 
+export type Timer = ReturnType<typeof useTimer>
+
 /**
  * Timer composable
  * @param timerDuration - how long the timer should run for
