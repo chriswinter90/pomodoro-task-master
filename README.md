@@ -3,7 +3,7 @@ A simple task management application inspired by the Pomodoro technique, designe
 
 ## Planned Feature Ideas
 - [x] Task list with completion status, add/remove tasks
-- [ ] Save task data to local storage
+- [x] Save task data to local storage
 - [x] Add a timer
 - [x] Save timer data to local storage
 - [ ] "Break" timer
