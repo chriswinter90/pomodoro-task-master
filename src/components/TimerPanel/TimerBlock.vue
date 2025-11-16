@@ -35,16 +35,16 @@
 </script>
 
 <style scoped lang="scss">
-  .timer-block {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 15px 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-  .timer-block.active {
+.timer-block {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 15px 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+.timer-block.active {
     background-color: #d84f4f;
   }
   .timer-block:hover {

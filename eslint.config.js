@@ -6,5 +6,6 @@ export default vuetify({
     'vue/attributes-order': 'off',
     'perfectionist/sort-imports': 'off',
     'curly': 'off',
+    'unicorn/no-array-callback-reference': 'off',
   },
 })

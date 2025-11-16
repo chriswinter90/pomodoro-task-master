@@ -1,12 +1,14 @@
 <template>
   <div class="timer-panel">
-    <div class="timer-list d-flex ml-8 mr-8">
-      <template v-for="timer in timers.timers" :key="timer.id">
-        <TimerBlock :timer-id="timer.id" :duration="timer.duration" />
-      </template>
-      <v-btn class="add-timer-btn h-auto" border="md" color="green" @click="showAddTimerPanel = true">
-        <v-icon>mdi-plus</v-icon>
-      </v-btn>
+    <div class="d-flex justify-space-around">
+      <div class="timer-list d-flex flex-wrap ml-8 mr-8 mb-8">
+        <template v-for="timer in timers.timers" :key="timer.id">
+          <TimerBlock :timer-id="timer.id" :duration="timer.duration" />
+        </template>
+        <v-btn class="add-timer-btn h-auto" border="md" color="green" @click="showAddTimerPanel = true">
+          <v-icon>mdi-plus</v-icon>
+        </v-btn>
+      </div>
     </div>
     <TimerControls
       :is-running="currentTimer.timerRunning"
@@ -44,6 +46,6 @@
 <style scoped lang="scss">
   .timer-list > * {
     width: 100px;
-    margin-right: 10px;
+    margin: 10px;
   }
 </style>
