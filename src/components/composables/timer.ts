@@ -17,13 +17,12 @@ export function useTimer(timerDuration: number, id?: string) {
   const timerId = id ?? uuid()
   // The interval id for the running timer
   const timerInterval = ref(-1)
-  // If the timer is running or not
-  const timerActive = computed(() => timerInterval.value !== -1)
   // how long the timer should run for
   const duration = ref(timerDuration)
   // how long the timer has been running for
   const elapsedSeconds = ref(0)
-
+  // If the timer is running or not
+  const timerRunning = computed(() => timerInterval.value !== -1)
   const timeRemainingInSeconds = computed(() => duration.value - elapsedSeconds.value)
 
   /**
@@ -36,7 +35,7 @@ export function useTimer(timerDuration: number, id?: string) {
   const setDuration = (newDuration: number) => duration.value = newDuration
 
   const startTimer = () => {
-    if (timerActive.value) {
+    if (timerRunning.value) {
       console.warn('Timer is already running')
       return
     }
@@ -47,7 +46,7 @@ export function useTimer(timerDuration: number, id?: string) {
   }
 
   const stopTimer = () => {
-    if (!timerActive.value) {
+    if (!timerRunning.value) {
       console.warn('Timer is not running')
       return
     }
@@ -56,6 +55,8 @@ export function useTimer(timerDuration: number, id?: string) {
   }
 
   const resetTimer = () => {
+    clearInterval(timerInterval.value)
+    timerInterval.value = -1
     elapsedSeconds.value = 0
   }
 
@@ -64,6 +65,7 @@ export function useTimer(timerDuration: number, id?: string) {
     duration,
     elapsedSeconds,
     displayTimeString,
+    timerRunning,
     startTimer,
     stopTimer,
     resetTimer,

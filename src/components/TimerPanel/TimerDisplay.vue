@@ -22,5 +22,8 @@
 </script>
 
 <style scoped lang="scss">
-
+  .timer-display {
+    font-size: 2.5rem;
+    font-weight: bold;
+  }
 </style>

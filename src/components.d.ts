@@ -9,6 +9,7 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     AddTaskPanel: typeof import('./components/TaskPanel/AddTaskPanel.vue')['default']
+    AddTimerPanel: typeof import('./components/TimerPanel/AddTimerPanel.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     TaskPanel: typeof import('./components/TaskPanel/TaskPanel.vue')['default']

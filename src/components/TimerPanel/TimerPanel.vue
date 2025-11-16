@@ -4,35 +4,41 @@
       <template v-for="timer in timers.timers" :key="timer.id">
         <TimerBlock :timer-id="timer.id" :duration="timer.duration" />
       </template>
-      <v-btn class="add-timer-btn h-auto" border="md" color="green">
+      <v-btn class="add-timer-btn h-auto" border="md" color="green" @click="showAddTimerPanel = true">
         <v-icon>mdi-plus</v-icon>
       </v-btn>
     </div>
     <TimerControls
+      :is-running="currentTimer.timerRunning"
       @start="currentTimer.startTimer()"
       @stop="currentTimer.stopTimer()"
       @reset="currentTimer.resetTimer()"
     />
     <TimerDisplay
       v-if="currentTimer"
-      :elapsed-seconds="currentTimer.elapsedSeconds.value"
-      :duration="currentTimer.duration.value"
-      :display-time-string="currentTimer.displayTimeString.value"
+      :key="currentTimer.timerId"
+      :elapsed-seconds="currentTimer.elapsedSeconds"
+      :duration="currentTimer.duration"
+      :display-time-string="currentTimer.displayTimeString"
     />
+    <AddTimerPanel v-model="showAddTimerPanel" />
   </div>
 </template>
 
 <script setup lang="ts">
   import { useTimersStore } from '@/stores/timers.ts'
   import { useTimer } from '@/components/composables/timer.ts'
+  import AddTimerPanel from '@/components/TimerPanel/AddTimerPanel.vue'
 
   const timers = useTimersStore()
 
-  let currentTimer = useTimer(0)
+  const showAddTimerPanel = ref(false)
+
+  const currentTimer = ref(useTimer(timers.selectedTimer.duration, timers.selectedTimer.id))
 
   watch(() => timers.selectedTimer, selectedTimer => {
-    if (selectedTimer) currentTimer = useTimer(selectedTimer.duration, selectedTimer.id)
-  })
+    currentTimer.value = useTimer(selectedTimer.duration, selectedTimer.id)
+  }, { deep: true })
 </script>
 
 <style scoped lang="scss">
