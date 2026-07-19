@@ -3,7 +3,11 @@
     <div class="d-flex justify-space-around">
       <div class="timer-list d-flex flex-wrap ml-8 mr-8 mb-8">
         <template v-for="timer in timers.timers" :key="timer.id">
-          <TimerBlock :timer-id="timer.id" :duration="timer.duration" />
+          <TimerBlock
+            :timer-id="timer.id"
+            :duration="timer.duration"
+            :break-duration="timer.breakDuration ?? 300"
+          />
         </template>
         <v-btn class="add-timer-btn h-auto" border="md" color="green" @click="showAddTimerPanel = true">
           <v-icon>mdi-plus</v-icon>
@@ -11,36 +15,45 @@
       </div>
     </div>
     <TimerControls
-      :is-running="currentTimer.timerRunning"
-      @start="currentTimer.startTimer()"
-      @stop="currentTimer.stopTimer()"
-      @reset="currentTimer.resetTimer()"
+      :is-running="controller.timerRunning"
+      :mode="controller.mode"
+      @start="controller.start()"
+      @stop="controller.stop()"
+      @reset="controller.reset()"
+      @snooze="showSnoozePanel = true"
+      @skipBreak="controller.skipBreak()"
     />
     <TimerDisplay
-      v-if="currentTimer"
-      :key="currentTimer.timerId"
-      :elapsed-seconds="currentTimer.elapsedSeconds"
-      :duration="currentTimer.duration"
-      :display-time-string="currentTimer.displayTimeString"
+      :display-time-string="controller.displayTimeString"
+      :mode="controller.mode"
+      :countdown-remaining="controller.countdownRemaining"
     />
     <AddTimerPanel v-model="showAddTimerPanel" />
+    <SnoozePanel v-model="showSnoozePanel" @confirm="handleSnoozeConfirm" />
   </div>
 </template>
 
 <script setup lang="ts">
   import { useTimersStore } from '@/stores/timers.ts'
-  import { useTimer } from '@/components/composables/timer.ts'
+  import { useBreakController } from '@/components/composables/breakController.ts'
   import AddTimerPanel from '@/components/TimerPanel/AddTimerPanel.vue'
+  import SnoozePanel from '@/components/TimerPanel/SnoozePanel.vue'
 
   const timers = useTimersStore()
 
   const showAddTimerPanel = ref(false)
+  const showSnoozePanel = ref(false)
 
-  const currentTimer = ref(useTimer(timers.selectedTimer.duration, timers.selectedTimer.id))
+  const controller = ref(useBreakController(timers.selectedTimer))
 
-  watch(() => timers.selectedTimer, selectedTimer => {
-    currentTimer.value = useTimer(selectedTimer.duration, selectedTimer.id)
+  watch(() => timers.selectedTimer, (selectedTimer) => {
+    controller.value.dispose()
+    controller.value = useBreakController(selectedTimer)
   }, { deep: true })
+
+  function handleSnoozeConfirm(duration: number) {
+    controller.value.snooze(duration)
+  }
 </script>
 
 <style scoped lang="scss">

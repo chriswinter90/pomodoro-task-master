@@ -1,28 +1,75 @@
 <template>
-  <div class="timer-display">
-    {{ displayTimeString }}
+  <div class="timer-display" :class="mode">
+    <template v-if="mode === 'countdown'">
+      <div class="mode-label countdown-label">Break starts in {{ displayTimeString }}</div>
+      <v-progress-linear
+        :model-value="countdownRemaining / 30 * 100"
+        color="orange"
+        height="8"
+        class="mt-2"
+      />
+    </template>
+    <template v-else>
+      <div class="mode-label" v-if="mode !== 'idle'">{{ modeLabel }}</div>
+      <div class="time">{{ displayTimeString }}</div>
+    </template>
   </div>
 </template>
 
 <script setup lang="ts">
-  defineProps({
-    duration: {
-      type: Number,
-      required: true,
-    },
-    elapsedSeconds: {
-      type: Number,
-      required: true,
-    },
-    displayTimeString: {
-      type: String,
-      required: true,
-    },
+  import type { BreakMode } from '@/components/composables/breakController.ts'
+
+  const props = defineProps<{
+    displayTimeString: string
+    mode: BreakMode
+    countdownRemaining: number
+  }>()
+
+  const modeLabel = computed(() => {
+    switch (props.mode) {
+      case 'work': return 'Work'
+      case 'break': return 'Break'
+      case 'countdown': return ''
+      default: return ''
+    }
   })
 </script>
 
 <style scoped lang="scss">
   .timer-display {
+    font-size: 2.5rem;
+    font-weight: bold;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .timer-display.work {
+    color: #d84f4f;
+  }
+
+  .timer-display.break {
+    color: #4caf50;
+  }
+
+  .timer-display.countdown {
+    color: #ff9800;
+  }
+
+  .mode-label {
+    font-size: 1rem;
+    font-weight: normal;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .countdown-label {
+    font-size: 1.2rem;
+  }
+
+  .time {
     font-size: 2.5rem;
     font-weight: bold;
   }
