@@ -1,4 +1,4 @@
-import { ref, computed, watch, onUnmounted, type Ref, type ComputedRef } from 'vue'
+import { ref, computed, watch, type Ref, type ComputedRef } from 'vue'
 import { useTimer, displayTime } from '@/components/composables/timer.ts'
 import type { TimerData } from '@/stores/timers.ts'
 
@@ -23,6 +23,10 @@ export function useBreakController(timerData: TimerData) {
 
   // Notification permission state
   let notificationPermissionRequested = false
+
+  // Track whether we've already handled completion for the current timer run
+  let workCompleted = false
+  let breakCompleted = false
 
   // Watchers for timer completion
   let workCompletionUnwatch: (() => void) | null = null
@@ -53,15 +57,22 @@ export function useBreakController(timerData: TimerData) {
   }
 
   function sendNotification(title: string, body: string) {
-    if (Notification.permission === 'granted') {
-      new Notification(title, { body })
-    } else if (Notification.permission !== 'denied') {
-      // Request but don't block
-      requestNotificationPermission().then(perm => {
-        if (perm === 'granted') {
-          new Notification(title, { body })
-        }
-      })
+    try {
+      if (Notification.permission === 'granted') {
+        new Notification(title, { body })
+        console.log('Notification sent:', title)
+      } else if (Notification.permission !== 'denied') {
+        requestNotificationPermission().then(perm => {
+          if (perm === 'granted') {
+            new Notification(title, { body })
+            console.log('Notification sent (after permission):', title)
+          }
+        })
+      } else {
+        console.warn('Notification permission denied')
+      }
+    } catch (e) {
+      console.error('Failed to send notification:', e)
     }
   }
 
@@ -87,6 +98,7 @@ export function useBreakController(timerData: TimerData) {
   }
 
   function startBreak() {
+    breakCompleted = false
     breakTimer.setDuration(breakTimerDuration)
     breakTimer.resetTimer()
     breakTimer.startTimer()
@@ -96,6 +108,9 @@ export function useBreakController(timerData: TimerData) {
   function start() {
     requestNotificationPermission()
     stopCountdown()
+
+    // Reset completion flags
+    workCompleted = false
 
     // Reset both timers
     workTimer.setDuration(workTimerDuration)
@@ -124,6 +139,8 @@ export function useBreakController(timerData: TimerData) {
     breakTimer.resetTimer()
     mode.value = 'idle'
     countdownRemaining.value = 0
+    workCompleted = false
+    breakCompleted = false
   }
 
   function snooze(durationSeconds: number) {
@@ -137,6 +154,7 @@ export function useBreakController(timerData: TimerData) {
       breakTimer.setDuration(breakTimer.elapsedSeconds.value + durationSeconds)
     } else if (mode.value === 'countdown') {
       // Cancel countdown, return to work mode with snooze duration
+      workCompleted = false
       workTimer.setDuration(durationSeconds)
       workTimer.resetTimer()
       workTimer.startTimer()
@@ -170,13 +188,18 @@ export function useBreakController(timerData: TimerData) {
     breakTimer.resetTimer()
     mode.value = 'idle'
     countdownRemaining.value = 0
+    workCompleted = false
+    breakCompleted = false
   }
 
   // Watch work timer for completion
   workCompletionUnwatch = watch(
     () => workTimer.elapsedSeconds.value,
     (elapsed) => {
+      if (workCompleted) return
       if (mode.value === 'work' && elapsed >= workTimer.duration.value) {
+        workCompleted = true
+        console.log('Work timer completed, elapsed:', elapsed, 'duration:', workTimer.duration.value)
         // Work timer completed
         workTimer.stopTimer()
         sendNotification('Work Complete!', 'Time for a break.')
@@ -189,7 +212,10 @@ export function useBreakController(timerData: TimerData) {
   breakCompletionUnwatch = watch(
     () => breakTimer.elapsedSeconds.value,
     (elapsed) => {
+      if (breakCompleted) return
       if (mode.value === 'break' && elapsed >= breakTimer.duration.value) {
+        breakCompleted = true
+        console.log('Break timer completed, elapsed:', elapsed, 'duration:', breakTimer.duration.value)
         // Break timer completed
         breakTimer.stopTimer()
         sendNotification('Break Complete!', 'Ready to work again?')

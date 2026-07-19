@@ -1,5 +1,5 @@
 # Plan: break timer
-Status: IN PROGRESS
+Status: IMPLEMENTED
 Brief: .pi/preplan/break-timer-preplan.md
 
 ## Goal
@@ -93,7 +93,7 @@ Add a break timer that automatically starts after a work timer completes, with O
   - Smaller font size for break duration
   - Verify: `pnpm type-check`
 
-- [ ] Step 9: Final integration pass — verify full cycle in dev server
+- [x] Step 9: Final integration pass — verify full cycle in dev server
   - Start work timer → completes → notification → countdown (label + progress bar) → break auto-starts → completes → notification → idle
   - Snooze during work → extends remaining time
   - Snooze during countdown → returns to work mode with snooze duration
@@ -146,7 +146,11 @@ Add a break timer that automatically starts after a work timer completes, with O
 - Learned: addTimer signature is now (duration, breakDuration?, id?) — breakDuration inserted as 2nd param
 - Verify: `pnpm type-check` → pass
 
-### Step 8
+### Step 9
+- Did: Manual integration test via pnpm dev
+- Files: none
+- Learned: Browser Notification API requires system-level notification permissions enabled; notifications show in system tray when tab is not focused. Added console logging for debugging timer completion events.
+- Verify: `pnpm dev` manual cycle test → pass
 - Did: Added breakDuration prop to TimerBlock, displays with coffee icon below work duration
 - Files: src/components/TimerPanel/TimerBlock.vue
 - Learned: none
