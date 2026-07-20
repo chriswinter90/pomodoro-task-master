@@ -9,8 +9,11 @@
         class="mt-2"
       />
     </template>
+    <template v-else-if="mode === 'idle'">
+      <div class="mode-label idle-label">Ready</div>
+    </template>
     <template v-else>
-      <div class="mode-label" v-if="mode !== 'idle'">{{ modeLabel }}</div>
+      <div class="mode-label">{{ modeLabel }}</div>
       <div class="time">{{ displayTimeString }}</div>
     </template>
   </div>
@@ -27,10 +30,15 @@
 
   const modeLabel = computed(() => {
     switch (props.mode) {
-      case 'work': return 'Work'
-      case 'break': return 'Break'
-      case 'countdown': return ''
-      default: return ''
+      case 'work': {
+        return 'Work'
+      }
+      case 'break': {
+        return 'Break'
+      }
+      default: {
+        return ''
+      }
     }
   })
 </script>
@@ -67,6 +75,11 @@
 
   .countdown-label {
     font-size: 1.2rem;
+  }
+
+  .idle-label {
+    font-size: 1rem;
+    opacity: 0.5;
   }
 
   .time {

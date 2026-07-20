@@ -55,7 +55,9 @@ export function useTimer(timerDuration: number, id?: string) {
   }
 
   const resetTimer = () => {
-    clearInterval(timerInterval.value)
+    if (timerInterval.value !== -1) {
+      clearInterval(timerInterval.value)
+    }
     timerInterval.value = -1
     elapsedSeconds.value = 0
   }

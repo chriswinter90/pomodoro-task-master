@@ -1,8 +1,12 @@
 <template>
   <div class="snooze-panel" v-if="showPanel">
-    <v-overlay />
+    <v-overlay @click="showPanel = false" />
     <v-card width="500" height="320">
-      <v-card-title>Snooze</v-card-title>
+      <v-card-title class="d-flex justify-space-between align-center">
+        <span>Snooze</span>
+        <v-btn icon="mdi-close" variant="text" @click="showPanel = false" />
+      </v-card-title>
+      <div v-if="showError" class="error-message">Duration must be greater than 0</div>
       <div class="preset-buttons">
         <v-btn color="primary" @click="confirmPreset(300)">5 min</v-btn>
         <v-btn color="primary" @click="confirmPreset(600)">10 min</v-btn>
@@ -40,6 +44,7 @@
   const valid = ref(false)
   const minutes = ref(0)
   const seconds = ref(0)
+  const showError = ref(false)
 
   function confirmPreset(duration: number) {
     emit('confirm', duration)
@@ -51,6 +56,8 @@
     if (totalSeconds > 0) {
       emit('confirm', totalSeconds)
       showPanel.value = false
+    } else {
+      showError.value = true
     }
   }
 </script>
@@ -86,5 +93,11 @@
     flex-direction: column;
     gap: 10px;
     align-items: center;
+  }
+
+  .error-message {
+    color: red;
+    font-size: 0.875rem;
+    text-align: center;
   }
 </style>

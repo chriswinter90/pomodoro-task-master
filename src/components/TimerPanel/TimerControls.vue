@@ -9,7 +9,7 @@
     >
       Snooze
     </v-btn>
-    <v-btn v-if="mode === 'countdown'" color="secondary" @click="emits('skipBreak')">Skip Break</v-btn>
+    <v-btn v-if="mode === 'countdown'" color="secondary" @click="emits('skip-break')">Skip Break</v-btn>
     <v-btn color="warning" @click="emits('reset')">Reset</v-btn>
   </div>
 </template>
@@ -17,16 +17,15 @@
 <script setup lang="ts">
   import type { BreakMode } from '@/components/composables/breakController.ts'
 
-  const props = defineProps<{
-    isRunning: boolean
+  defineProps<{
     mode: BreakMode
   }>()
   const emits = defineEmits<{
-    start: []
-    stop: []
-    reset: []
-    snooze: []
-    skipBreak: []
+    'start': []
+    'stop': []
+    'reset': []
+    'snooze': []
+    'skip-break': []
   }>()
 </script>
 

@@ -15,13 +15,12 @@
       </div>
     </div>
     <TimerControls
-      :is-running="controller.timerRunning"
       :mode="controller.mode"
       @start="controller.start()"
       @stop="controller.stop()"
       @reset="controller.reset()"
       @snooze="showSnoozePanel = true"
-      @skipBreak="controller.skipBreak()"
+      @skip-break="controller.skipBreak()"
     />
     <TimerDisplay
       :display-time-string="controller.displayTimeString"
@@ -46,7 +45,7 @@
 
   const controller = ref(useBreakController(timers.selectedTimer))
 
-  watch(() => timers.selectedTimer, (selectedTimer) => {
+  watch(() => timers.selectedTimer, selectedTimer => {
     controller.value.dispose()
     controller.value = useBreakController(selectedTimer)
   }, { deep: true })

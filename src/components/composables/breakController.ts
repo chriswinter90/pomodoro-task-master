@@ -1,5 +1,5 @@
-import { ref, computed, watch, type Ref, type ComputedRef } from 'vue'
-import { useTimer, displayTime } from '@/components/composables/timer.ts'
+import { computed, type ComputedRef, ref, watch } from 'vue'
+import { displayTime, useTimer } from '@/components/composables/timer.ts'
 import type { TimerData } from '@/stores/timers.ts'
 
 export type BreakMode = 'idle' | 'work' | 'countdown' | 'break'
@@ -20,9 +20,6 @@ export function useBreakController(timerData: TimerData) {
 
   // Countdown interval
   let countdownInterval: number | null = null
-
-  // Notification permission state
-  let notificationPermissionRequested = false
 
   // Track whether we've already handled completion for the current timer run
   let workCompleted = false
@@ -49,10 +46,9 @@ export function useBreakController(timerData: TimerData) {
   })
 
   function requestNotificationPermission(): Promise<'default' | 'denied' | 'granted'> {
-    if (notificationPermissionRequested) {
+    if (Notification.permission !== 'default') {
       return Promise.resolve(Notification.permission)
     }
-    notificationPermissionRequested = true
     return Notification.requestPermission()
   }
 
@@ -61,18 +57,18 @@ export function useBreakController(timerData: TimerData) {
       if (Notification.permission === 'granted') {
         new Notification(title, { body })
         console.log('Notification sent:', title)
-      } else if (Notification.permission !== 'denied') {
+      } else if (Notification.permission === 'denied') {
+        console.warn('Notification permission denied')
+      } else {
         requestNotificationPermission().then(perm => {
           if (perm === 'granted') {
             new Notification(title, { body })
             console.log('Notification sent (after permission):', title)
           }
-        })
-      } else {
-        console.warn('Notification permission denied')
+        }).catch(() => { /* permission denied or unavailable */ })
       }
-    } catch (e) {
-      console.error('Failed to send notification:', e)
+    } catch (error) {
+      console.error('Failed to send notification:', error)
     }
   }
 
@@ -106,7 +102,7 @@ export function useBreakController(timerData: TimerData) {
   }
 
   function start() {
-    requestNotificationPermission()
+    requestNotificationPermission().catch(() => { /* permission denied or unavailable */ })
     stopCountdown()
 
     // Reset completion flags
@@ -123,6 +119,7 @@ export function useBreakController(timerData: TimerData) {
 
   function stop() {
     stopCountdown()
+    countdownRemaining.value = 0
     if (mode.value === 'work') {
       workTimer.stopTimer()
     } else if (mode.value === 'break') {
@@ -146,26 +143,40 @@ export function useBreakController(timerData: TimerData) {
   function snooze(durationSeconds: number) {
     stopCountdown()
 
-    if (mode.value === 'work') {
-      // Extend the work timer: set duration to elapsed + snooze amount
-      workTimer.setDuration(workTimer.elapsedSeconds.value + durationSeconds)
-    } else if (mode.value === 'break') {
-      // Extend the break timer
-      breakTimer.setDuration(breakTimer.elapsedSeconds.value + durationSeconds)
-    } else if (mode.value === 'countdown') {
-      // Cancel countdown, return to work mode with snooze duration
-      workCompleted = false
-      workTimer.setDuration(durationSeconds)
-      workTimer.resetTimer()
-      workTimer.startTimer()
-      mode.value = 'work'
-      return
+    // Guard against snoozing a completed timer (race condition)
+    if (mode.value === 'work' && workCompleted) return
+    if (mode.value === 'break' && breakCompleted) return
+
+    switch (mode.value) {
+      case 'work': {
+        // Extend the work timer: set duration to elapsed + snooze amount
+        workTimer.setDuration(workTimer.elapsedSeconds.value + durationSeconds)
+
+        break
+      }
+      case 'break': {
+        // Extend the break timer
+        breakTimer.setDuration(breakTimer.elapsedSeconds.value + durationSeconds)
+
+        break
+      }
+      case 'countdown': {
+        // Cancel countdown, return to work mode — preserve elapsed time for consistency
+        workCompleted = false
+        workTimer.setDuration(workTimer.elapsedSeconds.value + durationSeconds)
+        workTimer.startTimer()
+        mode.value = 'work'
+        return
+      }
+      // No default
     }
   }
 
   function skipBreak() {
     stopCountdown()
     countdownRemaining.value = 0
+    workCompleted = false
+    breakCompleted = false
     mode.value = 'idle'
   }
 
@@ -195,7 +206,7 @@ export function useBreakController(timerData: TimerData) {
   // Watch work timer for completion
   workCompletionUnwatch = watch(
     () => workTimer.elapsedSeconds.value,
-    (elapsed) => {
+    elapsed => {
       if (workCompleted) return
       if (mode.value === 'work' && elapsed >= workTimer.duration.value) {
         workCompleted = true
@@ -205,13 +216,13 @@ export function useBreakController(timerData: TimerData) {
         sendNotification('Work Complete!', 'Time for a break.')
         startCountdown()
       }
-    }
+    },
   )
 
   // Watch break timer for completion
   breakCompletionUnwatch = watch(
     () => breakTimer.elapsedSeconds.value,
-    (elapsed) => {
+    elapsed => {
       if (breakCompleted) return
       if (mode.value === 'break' && elapsed >= breakTimer.duration.value) {
         breakCompleted = true
@@ -221,7 +232,7 @@ export function useBreakController(timerData: TimerData) {
         sendNotification('Break Complete!', 'Ready to work again?')
         mode.value = 'idle'
       }
-    }
+    },
   )
 
   return {
