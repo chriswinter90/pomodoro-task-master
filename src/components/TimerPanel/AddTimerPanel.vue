@@ -1,9 +1,10 @@
 <template>
   <div class="add-timer-panel" v-if="showPanel">
     <v-overlay />
-    <v-card width="500" height="300">
+    <v-card width="500">
       <v-card-title>Add Timer</v-card-title>
       <v-form v-model="valid" @submit.prevent="addTimer">
+        <v-card-subtitle>Work duration</v-card-subtitle>
         <v-number-input
           v-model="minutes"
           label="Minutes"
@@ -13,6 +14,20 @@
         :
         <v-number-input
           v-model="seconds"
+          :min="0"
+          :max="59"
+          control-variant="stacked"
+          label="Seconds"
+        />
+        <v-card-subtitle class="mt-4">Break duration</v-card-subtitle>
+        <v-number-input
+          v-model="breakMinutes"
+          label="Minutes"
+          control-variant="stacked"
+        />
+        :
+        <v-number-input
+          v-model="breakSeconds"
           :min="0"
           :max="59"
           control-variant="stacked"
@@ -41,12 +56,18 @@
 
   const minutes = ref(0)
   const seconds = ref(0)
+  const breakMinutes = ref(5)
+  const breakSeconds = ref(0)
 
   function addTimer() {
-    timersStore.addTimer(minutes.value * 60 + seconds.value)
+    const workDuration = minutes.value * 60 + seconds.value
+    const breakDuration = breakMinutes.value * 60 + breakSeconds.value
+    timersStore.addTimer(workDuration, breakDuration)
 
     minutes.value = 0
     seconds.value = 0
+    breakMinutes.value = 5
+    breakSeconds.value = 0
 
     showPanel.value = false
   }

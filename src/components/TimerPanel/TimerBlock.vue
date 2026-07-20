@@ -8,6 +8,10 @@
   >
     <v-icon size="36">mdi-clock</v-icon>
     {{ timerDisplay }}
+    <div class="break-duration">
+      <v-icon size="16">mdi-coffee</v-icon>
+      {{ breakDisplay }}
+    </div>
   </div>
 </template>
 
@@ -24,6 +28,10 @@
       type: Number,
       required: true,
     },
+    breakDuration: {
+      type: Number,
+      required: true,
+    },
   })
 
   const timers = useTimersStore()
@@ -31,6 +39,8 @@
   const isActive = computed(() => timers.selectedTimer?.id === props.timerId)
 
   const timerDisplay = computed(() => displayTime(props.duration))
+
+  const breakDisplay = computed(() => displayTime(props.breakDuration))
 
 </script>
 
@@ -44,7 +54,16 @@
   border: 1px solid #ccc;
   border-radius: 5px;
 }
-.timer-block.active {
+  .break-duration {
+    font-size: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    margin-top: 4px;
+    opacity: 0.8;
+  }
+
+  .timer-block.active {
     background-color: #d84f4f;
   }
   .timer-block:hover {
