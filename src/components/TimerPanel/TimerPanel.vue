@@ -43,12 +43,15 @@
   const showAddTimerPanel = ref(false)
   const showSnoozePanel = ref(false)
 
-  const controller = ref(useBreakController(timers.selectedTimer))
+  const controller = ref(useBreakController(
+    timers.selectedTimer ?? timers.timers[0]!,
+  ))
 
   watch(() => timers.selectedTimer, selectedTimer => {
+    if (!selectedTimer) return
     controller.value.dispose()
     controller.value = useBreakController(selectedTimer)
-  }, { deep: true })
+  })
 
   function handleSnoozeConfirm(duration: number) {
     controller.value.snooze(duration)
