@@ -1,7 +1,7 @@
 /**
  * plugins/index.ts
  *
- * Automatically included in `./src/main.ts`
+ * Plugin registration — imported by `./src/main.ts`
  */
 
 // Plugins
@@ -12,6 +12,11 @@ import router from '../router'
 // Types
 import type { App } from 'vue'
 
+/**
+ * Register all application plugins.
+ *
+ * @param app - Vue application instance
+ */
 export function registerPlugins (app: App) {
   app
     .use(vuetify)

@@ -13,8 +13,8 @@
           <template #prepend>
             <v-checkbox
               class="d-flex"
-              v-model="task.completed"
-              @update:model-value="taskStore.setCompletedAt(task.id, $event as boolean)"
+              :model-value="task.completed"
+              @update:model-value="handleComplete(task.id, Boolean($event))"
             />
           </template>
           <template #append>
@@ -30,7 +30,7 @@
         <v-divider />
       </template>
 
-      <v-list-item class="d-flex ">
+      <v-list-item class="d-flex">
         <v-btn
           class="add-button"
           color="green"
@@ -51,7 +51,11 @@
 
   const tasks = computed(() => taskStore.tasks)
 
-  const emit = defineEmits(['add-task'])
+  const emit = defineEmits<{ 'add-task': [] }>()
+
+  function handleComplete(id: string, newValue: boolean) {
+    taskStore.setCompletedAt(id, newValue)
+  }
 </script>
 
 <style scoped lang="scss">
