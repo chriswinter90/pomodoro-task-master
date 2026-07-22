@@ -1,21 +1,27 @@
 <template>
-  <div class="add-task-panel" v-if="showPanel">
-    <v-overlay />
-    <v-card width="500" height="300">
+  <v-dialog v-model="showPanel" max-width="500">
+    <v-card>
       <v-card-title>Add Task</v-card-title>
       <v-form v-model="valid" @submit.prevent="addTask">
-        <v-text-field v-model="title" type="text" label="Title" autofocus />
-        <v-text-field v-model="description" type="text" label="Description" />
+        <v-card-text>
+          <v-text-field
+            v-model="title"
+            type="text"
+            label="Title"
+            autofocus
+            required
+          />
+          <v-text-field v-model="description" type="text" label="Description" />
+        </v-card-text>
+        <v-card-actions>
+          <v-btn type="submit" color="green">
+            <v-icon>mdi-plus</v-icon>
+            Add Task
+          </v-btn>
+        </v-card-actions>
       </v-form>
-      <v-btn
-        color="green"
-        @click="addTask()"
-      >
-        <v-icon>mdi-plus</v-icon>
-        Add Task
-      </v-btn>
     </v-card>
-  </div>
+  </v-dialog>
 </template>
 
 <script setup lang="ts">
@@ -30,35 +36,21 @@
   const title = ref('')
   const description = ref('')
 
+  /**
+   * Submit the add-task form.
+   * Validates title is non-empty, creates task via store, resets form.
+   */
   function addTask() {
+    if (!title.value.trim()) return
     taskStore.addTask({
       title: title.value,
-      description: description.value,
+      description: description.value.trim(),
     })
 
     title.value = ''
     description.value = ''
+    valid.value = false
 
     showPanel.value = false
   }
 </script>
-
-<style scoped lang="scss">
-  .add-task-panel {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 999;
-  }
-
-  .v-card {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    border: 1px solid darkred;
-    padding: 20px;
-  }
-</style>
