@@ -1,7 +1,7 @@
 /**
  * plugins/vuetify.ts
  *
- * Framework documentation: https://vuetifyjs.com`
+ * Framework documentation: https://vuetifyjs.com
  */
 
 // Styles
@@ -23,6 +23,7 @@ export default createVuetify({
           accent: '#8c9eff',
           error: '#b71c1c',
           background: '#ffffff',
+          surface: '#f5f5f5',
         },
       },
       dark: {

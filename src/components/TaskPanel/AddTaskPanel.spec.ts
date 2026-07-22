@@ -80,6 +80,4 @@ describe('AddTaskPanel', () => {
     // After submission, valid should be reset to false
     expect((wrapper.vm as unknown as { valid: boolean }).valid).toBe(false)
   })
-
-
 })

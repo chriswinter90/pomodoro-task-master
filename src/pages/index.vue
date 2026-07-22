@@ -4,12 +4,12 @@
       class="mb-8"
       @add-task="showPanel = true"
     />
-    <add-task-panel v-model="showPanel" />
+    <AddTaskPanel v-model="showPanel" />
     <TimerPanel />
   </div>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
   const showPanel = ref(false)
 </script>
 
