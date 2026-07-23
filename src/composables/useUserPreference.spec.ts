@@ -36,15 +36,10 @@ describe('useUserPreference', () => {
     expect(value.value).toBe('fallback')
   })
 
-  it('persists new value to localStorage on setValue', () => {
-    const { setValue } = useUserPreference('my-key', 'fallback')
-    setValue('new-value')
-    expect(mockStorage['my-key']).toBe(JSON.stringify('new-value'))
-  })
-
-  it('updates reactive value on setValue', () => {
+  it('updates reactive value and persists to localStorage on setValue', () => {
     const { value, setValue } = useUserPreference('my-key', 'fallback')
-    setValue('updated')
-    expect(value.value).toBe('updated')
+    setValue('new-value')
+    expect(value.value).toBe('new-value')
+    expect(mockStorage['my-key']).toBe(JSON.stringify('new-value'))
   })
 })
