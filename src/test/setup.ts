@@ -116,6 +116,41 @@ const VFormStub = defineComponent({
   },
 })
 
+// --- VSwitch ---
+const VSwitchStub = defineComponent({
+  name: 'VSwitch',
+  props: {
+    modelValue: Boolean,
+    label: String,
+    hideDetails: Boolean,
+  },
+  emits: ['update:modelValue'],
+  setup(props, { attrs, slots, emit }) {
+    return () =>
+      h(
+        'label',
+        {
+          ...attrs,
+          'data-v-component': 'VSwitch',
+        },
+        [
+          slots.prepend?.(),
+          h(
+            'input',
+            {
+              'type': 'checkbox',
+              'checked': !!props.modelValue,
+              'onChange': (e: Event) => {
+                emit('update:modelValue', (e.target as HTMLInputElement).checked)
+              },
+            },
+          ),
+          slots.append?.(),
+        ],
+      )
+  },
+})
+
 // --- Generic pass-through stubs ---
 function createPassthroughStub(tagName: string, htmlTag = 'div') {
   return defineComponent({
@@ -165,6 +200,7 @@ const vuetifyStubs: Record<string, ReturnType<typeof defineComponent>> = {
   VCardText: createPassthroughStub('VCardText'),
   VCardActions: createPassthroughStub('VCardActions'),
   VDialog: createPassthroughStub('VDialog'),
+  VSwitch: VSwitchStub,
 }
 
 config.global.stubs = { ...config.global.stubs, ...vuetifyStubs }
