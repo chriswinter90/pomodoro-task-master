@@ -1,7 +1,6 @@
 <template>
   <v-switch
     v-model="isDark"
-    :label="isDark ? '' : ''"
     hide-details
     class="theme-toggle"
   >
