@@ -1,5 +1,6 @@
 <template>
   <div class="page-container">
+    <ThemeToggle />
     <div class="d-flex align-center mb-4">
       <v-btn-toggle v-model="viewMode" class="mr-4" density="compact" mandatory>
         <v-btn value="list">
