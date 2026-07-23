@@ -4,43 +4,39 @@
     :label="isDark ? '' : ''"
     hide-details
     class="theme-toggle"
-    @update:model-value="onToggle"
   >
-    <template v-slot:prepend>
+    <template #prepend>
       <v-icon>{{ isDark ? 'mdi-moon-waning-crescent' : 'mdi-weather-sunny' }}</v-icon>
     </template>
-    <template v-slot:append>
+    <template #append>
       <v-icon>{{ isDark ? 'mdi-weather-sunny' : 'mdi-moon-waning-crescent' }}</v-icon>
     </template>
   </v-switch>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
-import { useTheme } from 'vuetify'
-import { useUserPreference } from '@/composables/useUserPreference'
+  import { computed } from 'vue'
+  import { useTheme } from 'vuetify'
+  import { useUserPreference } from '@/composables/useUserPreference'
 
-const { theme } = useTheme()
-const { value: savedTheme, setValue: saveTheme } = useUserPreference('theme-preference', 'system')
+  const theme = useTheme()
+  const { value: savedTheme, setValue: saveTheme } = useUserPreference('theme-preference', 'system')
 
-// On first load, if no saved preference, let Vuetify's system default apply.
-// Otherwise, apply the saved theme.
-if (savedTheme !== 'system') {
-  theme.global.name = savedTheme
-}
+  // On the first load, if no saved preference, let Vuetify's system default apply.
+  // Otherwise, apply the saved theme.
+  if (savedTheme.value !== 'system') {
+    theme.change(savedTheme.value)
+  }
 
-const isDark = computed({
-  get: () => theme.global.name === 'dark',
-  set: (val: boolean) => {
-    const newTheme = val ? 'dark' : 'light'
-    theme.global.name = newTheme
-    saveTheme(newTheme)
-  },
-})
+  const isDark = computed({
+    get: () => theme.global.name.value === 'dark',
+    set: (val: boolean) => {
+      const newTheme: 'dark' | 'light' = val ? 'dark' : 'light'
+      theme.change(newTheme)
+      saveTheme(newTheme)
+    },
+  })
 
-function onToggle() {
-  // Model update handles persistence via the computed setter
-}
 </script>
 
 <style scoped lang="scss">

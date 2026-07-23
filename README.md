@@ -12,6 +12,7 @@ A simple task management application inspired by the Pomodoro technique, designe
 - [ ] Play sound
 - [ ] Flashy flashy
   - When timer is inactive for 5 minutes
+  - During break time 
 - [ ] User Settings
   - Flashy flashy on inactive timer
     - If on customize length of inactivity time

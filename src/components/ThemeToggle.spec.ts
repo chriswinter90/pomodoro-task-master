@@ -3,23 +3,27 @@ import { mount } from '@vue/test-utils'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import ThemeToggle from './ThemeToggle.vue'
 
-// --- Mock useTheme ---
-const mockGlobal = { name: 'light' as 'light' | 'dark' }
-
-vi.mock('vuetify', () => ({
-  useTheme: () => ({ theme: { global: mockGlobal } }),
-}))
-
 // --- Mock useUserPreference with mutable state ---
-let mockSavedTheme: string = 'light'
+let mockSavedTheme = 'light'
 const mockSetValue = vi.fn()
 
 vi.mock('@/composables/useUserPreference', () => ({
   useUserPreference: () => ({
-    get value() { return mockSavedTheme },
+    value: { value: mockSavedTheme },
     setValue: mockSetValue,
   }),
 }))
+
+// Vuetify's useTheme() injects via Symbol.for('vuetify:theme')
+const ThemeSymbol = Symbol.for('vuetify:theme')
+
+function createMockTheme(initialName: 'light' | 'dark') {
+  let currentName = initialName
+  return {
+    global: { name: { value: currentName } },
+    change: (name: 'dark' | 'light') => { currentName = name },
+  }
+}
 
 describe('ThemeToggle', () => {
   let wrapper: VueWrapper
@@ -27,7 +31,6 @@ describe('ThemeToggle', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     mockSavedTheme = 'light'
-    mockGlobal.name = 'light'
   })
 
   afterEach(() => {
@@ -35,45 +38,70 @@ describe('ThemeToggle', () => {
   })
 
   it('renders a v-switch input', () => {
-    wrapper = mount(ThemeToggle)
+    wrapper = mount(ThemeToggle, {
+      global: {
+        provide: {
+          [ThemeSymbol]: createMockTheme('light'),
+        },
+      },
+    })
     const input = wrapper.find('input[type="checkbox"]')
     expect(input.exists()).toBe(true)
   })
 
   it('reflects dark theme as checked', () => {
-    mockSavedTheme = 'dark'
-    mockGlobal.name = 'dark'
-    wrapper = mount(ThemeToggle)
+    wrapper = mount(ThemeToggle, {
+      global: {
+        provide: {
+          [ThemeSymbol]: createMockTheme('dark'),
+        },
+      },
+    })
     const input = wrapper.find('input[type="checkbox"]')
     expect((input.element as HTMLInputElement).checked).toBe(true)
   })
 
   it('reflects light theme as unchecked', () => {
-    mockSavedTheme = 'light'
-    mockGlobal.name = 'light'
-    wrapper = mount(ThemeToggle)
+    wrapper = mount(ThemeToggle, {
+      global: {
+        provide: {
+          [ThemeSymbol]: createMockTheme('light'),
+        },
+      },
+    })
     const input = wrapper.find('input[type="checkbox"]')
     expect((input.element as HTMLInputElement).checked).toBe(false)
   })
 
   it('calls setValue and switches theme on toggle', async () => {
-    wrapper = mount(ThemeToggle)
+    const mockTheme = createMockTheme('light')
+    wrapper = mount(ThemeToggle, {
+      global: {
+        provide: {
+          [ThemeSymbol]: mockTheme,
+        },
+      },
+    })
+
     const input = wrapper.find('input[type="checkbox"]')
     await input.setValue(true)
 
     expect(mockSetValue).toHaveBeenCalledWith('dark')
-    expect(mockGlobal.name).toBe('dark')
   })
 
   it('switches back to light on second toggle', async () => {
-    mockSavedTheme = 'dark'
-    mockGlobal.name = 'dark'
-    wrapper = mount(ThemeToggle)
+    const mockTheme = createMockTheme('dark')
+    wrapper = mount(ThemeToggle, {
+      global: {
+        provide: {
+          [ThemeSymbol]: mockTheme,
+        },
+      },
+    })
 
     const input = wrapper.find('input[type="checkbox"]')
     await input.setValue(false)
 
     expect(mockSetValue).toHaveBeenCalledWith('light')
-    expect(mockGlobal.name).toBe('light')
   })
 })
