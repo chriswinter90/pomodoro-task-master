@@ -64,7 +64,8 @@
   }
 
   .timer-block.active {
-    background-color: #d84f4f;
+    background-color: #d6010178;
+    border: 3px solid;
   }
   .timer-block:hover {
     cursor: pointer;
