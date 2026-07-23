@@ -5,22 +5,24 @@
         v-for="task in tasks"
         :key="task.id"
       >
-        <v-list-item
-          class="d-flex"
-          :title="task.title"
-          :subtitle="task.description"
-        >
+        <v-list-item class="d-flex">
           <template #prepend>
             <v-chip
               size="small"
               :color="statusColor(task.status)"
               variant="tonal"
-              class="status-badge mr-2 justify-center"
+              class="status-badge mr-2"
               @click="cycleStatus(task.id)"
             >
               {{ statusLabel(task.status) }}
             </v-chip>
           </template>
+          <div class="task-item-content">
+            <div class="task-item-title">{{ task.title }}</div>
+            <div v-if="task.description" class="task-item-description">
+              {{ task.description }}
+            </div>
+          </div>
           <template #append>
             <v-btn
               class="d-flex"
@@ -61,8 +63,7 @@
 
   function statusColor(status: TaskStatus): string {
     switch (status) {
-      case 'todo': { return 'grey'
-      }
+      case 'todo': { return 'grey' }
       case 'in-progress': { return 'blue'
       }
       case 'done': { return 'green'
@@ -72,12 +73,9 @@
 
   function statusLabel(status: TaskStatus): string {
     switch (status) {
-      case 'todo': { return 'Todo'
-      }
-      case 'in-progress': { return 'In Progress'
-      }
-      case 'done': { return 'Done'
-      }
+      case 'todo': { return 'Todo' }
+      case 'in-progress': { return 'In Progress' }
+      case 'done': { return 'Done' }
     }
   }
 
@@ -94,6 +92,26 @@
 <style scoped lang="scss">
   .v-list-item :deep(.v-list-item__content) {
     width: -webkit-fill-available;
+  }
+
+  .task-item-content {
+    width: -webkit-fill-available;
+  }
+
+  .task-item-title {
+    font-weight: 500;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
+  }
+
+  .task-item-description {
+    font-size: 0.875rem;
+    opacity: 0.7;
+    margin-top: 4px;
+    white-space: normal;
+    overflow-wrap: break-word;
+    word-break: break-word;
   }
 
   .add-button {
