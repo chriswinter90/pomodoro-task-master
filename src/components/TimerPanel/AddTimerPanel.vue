@@ -1,48 +1,57 @@
 <template>
-  <div class="add-timer-panel" v-if="showPanel">
-    <v-overlay />
+  <v-dialog class="add-timer-panel" v-model="showPanel">
     <v-card width="500">
       <v-card-title>Add Timer</v-card-title>
-      <v-form v-model="valid" @submit.prevent="addTimer">
-        <v-card-subtitle>Work duration</v-card-subtitle>
-        <v-number-input
-          v-model="minutes"
-          label="Minutes"
-          control-variant="stacked"
-          autofocus
-        />
-        :
-        <v-number-input
-          v-model="seconds"
-          :min="0"
-          :max="59"
-          control-variant="stacked"
-          label="Seconds"
-        />
-        <v-card-subtitle class="mt-4">Break duration</v-card-subtitle>
-        <v-number-input
-          v-model="breakMinutes"
-          label="Minutes"
-          control-variant="stacked"
-        />
-        :
-        <v-number-input
-          v-model="breakSeconds"
-          :min="0"
-          :max="59"
-          control-variant="stacked"
-          label="Seconds"
-        />
+      <v-form class="d-flex flex-column" v-model="valid" @submit.prevent="addTimer">
+        <v-card-text>
+          <v-card-subtitle>Work duration</v-card-subtitle>
+          <div class="d-flex flex-row">
+            <v-number-input
+              v-model="minutes"
+              label="Minutes"
+              control-variant="stacked"
+              autofocus
+            />
+            <div class="colon-separator">
+              :
+            </div>
+            <v-number-input
+              v-model="seconds"
+              :min="0"
+              :max="59"
+              control-variant="stacked"
+              label="Seconds"
+            />
+          </div>
+          <v-card-subtitle class="mt-4">Break duration</v-card-subtitle>
+          <div class="d-flex flex-row">
+            <v-number-input
+              v-model="breakMinutes"
+              label="Minutes"
+              control-variant="stacked"
+            />
+            <div class="colon-separator">:</div>
+            <v-number-input
+              v-model="breakSeconds"
+              :min="0"
+              :max="59"
+              control-variant="stacked"
+              label="Seconds"
+            />
+          </div>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn
+            color="green"
+            @click="addTimer()"
+          >
+            <v-icon>mdi-plus</v-icon>
+            Add Timer
+          </v-btn>
+        </v-card-actions>
       </v-form>
-      <v-btn
-        color="green"
-        @click="addTimer()"
-      >
-        <v-icon>mdi-plus</v-icon>
-        Add Timer
-      </v-btn>
     </v-card>
-  </div>
+  </v-dialog>
 </template>
 
 <script setup lang="ts">
@@ -96,5 +105,11 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+  }
+
+  .colon-separator {
+    padding: 0 5px 23px 5px;
+    align-content: center;
+    font-size: 33px;
   }
 </style>
