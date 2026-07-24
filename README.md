@@ -9,7 +9,7 @@ A simple task management application inspired by the Pomodoro technique, designe
 - [x] "Break" timer
 - [x] "Snooze" timer
 - [x] Add Kanban view
-- [ ] Play sound
+- [x] Play sound
 - [ ] Flashy flashy
   - When timer is inactive for 5 minutes
   - During break time 
