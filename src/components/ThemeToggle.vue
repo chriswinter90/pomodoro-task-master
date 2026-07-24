@@ -19,11 +19,11 @@
   import { useUserPreference } from '@/composables/useUserPreference'
 
   const theme = useTheme()
-  const { value: savedTheme, setValue: saveTheme } = useUserPreference('theme-preference', 'system')
+  const { value: savedTheme, setValue: saveTheme } = useUserPreference('taskMasterTheme', 'system')
 
   // On the first load, if no saved preference, let Vuetify's system default apply.
   // Otherwise, apply the saved theme.
-  if (savedTheme.value !== 'system') {
+  if (typeof savedTheme.value === 'string' && savedTheme.value !== 'system') {
     theme.change(savedTheme.value)
   }
 

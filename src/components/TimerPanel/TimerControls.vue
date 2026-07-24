@@ -11,14 +11,20 @@
     </v-btn>
     <v-btn v-if="mode === 'countdown'" color="secondary" @click="emits('skip-break')">Skip Break</v-btn>
     <v-btn color="warning" @click="emits('reset')">Reset</v-btn>
+    <v-btn icon @click="emits('toggle-sound')">
+      <v-icon>{{ soundEnabled ? 'mdi-volume-high' : 'mdi-volume-off' }}</v-icon>
+    </v-btn>
   </div>
 </template>
 
 <script setup lang="ts">
   import type { BreakMode } from '@/components/composables/breakController.ts'
 
+  import type { Ref } from 'vue'
+
   defineProps<{
     mode: BreakMode
+    soundEnabled: Ref<boolean>
   }>()
   const emits = defineEmits<{
     'start': []
@@ -26,6 +32,7 @@
     'reset': []
     'snooze': []
     'skip-break': []
+    'toggle-sound': []
   }>()
 </script>
 

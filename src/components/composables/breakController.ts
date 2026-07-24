@@ -1,5 +1,6 @@
 import { computed, type ComputedRef, ref, watch } from 'vue'
 import { displayTime, useTimer } from '@/components/composables/timer.ts'
+import { SoundType, useSound } from '@/components/composables/sound.ts'
 import type { TimerData } from '@/stores/timers.ts'
 
 export type BreakMode = 'idle' | 'work' | 'countdown' | 'break'
@@ -12,6 +13,9 @@ export function useBreakController(timerData: TimerData) {
 
   const mode = ref<BreakMode>('idle')
   const countdownRemaining = ref(0)
+
+  // Sound playback
+  const { playSound } = useSound()
 
   // Work timer instance
   const workTimer = useTimer(workTimerDuration)
@@ -214,6 +218,7 @@ export function useBreakController(timerData: TimerData) {
         // Work timer completed
         workTimer.stopTimer()
         sendNotification('Work Complete!', 'Time for a break.')
+        playSound(SoundType.WorkEnd)
         startCountdown()
       }
     },
@@ -230,6 +235,7 @@ export function useBreakController(timerData: TimerData) {
         // Break timer completed
         breakTimer.stopTimer()
         sendNotification('Break Complete!', 'Ready to work again?')
+        playSound(SoundType.BreakEnd)
         mode.value = 'idle'
       }
     },

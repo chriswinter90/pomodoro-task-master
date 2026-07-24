@@ -16,11 +16,13 @@
     </div>
     <TimerControls
       :mode="controller.mode"
+      :sound-enabled="sound.soundEnabled"
       @start="controller.start()"
       @stop="controller.stop()"
       @reset="controller.reset()"
       @snooze="showSnoozePanel = true"
       @skip-break="controller.skipBreak()"
+      @toggle-sound="sound.soundEnabled.value = !sound.soundEnabled.value"
     />
     <TimerDisplay
       :display-time-string="controller.displayTimeString"
@@ -35,10 +37,13 @@
 <script setup lang="ts">
   import { useTimersStore } from '@/stores/timers.ts'
   import { useBreakController } from '@/components/composables/breakController.ts'
+  import { useSound } from '@/components/composables/sound.ts'
   import AddTimerPanel from '@/components/TimerPanel/AddTimerPanel.vue'
   import SnoozePanel from '@/components/TimerPanel/SnoozePanel.vue'
 
   const timers = useTimersStore()
+
+  const sound = useSound()
 
   const showAddTimerPanel = ref(false)
   const showSnoozePanel = ref(false)

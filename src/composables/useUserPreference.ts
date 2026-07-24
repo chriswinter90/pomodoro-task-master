@@ -11,14 +11,14 @@ import { ref, type Ref } from 'vue'
  */
 export function useUserPreference(
   key: string,
-  fallback: string,
-): { value: Ref<string>; setValue: (v: string) => void } {
+  fallback: string | boolean,
+): { value: Ref<string | boolean>, setValue: (v: string | boolean) => void } {
   const stored = localStorage.getItem(key)
   let initial = fallback
 
   try {
     const parsed = JSON.parse(stored ?? '')
-    if (typeof parsed === 'string') {
+    if (typeof parsed === 'string' || typeof parsed === 'boolean') {
       initial = parsed
     }
   } catch {
@@ -27,7 +27,7 @@ export function useUserPreference(
 
   const value = ref(initial)
 
-  function setValue(v: string) {
+  function setValue(v: string | boolean) {
     value.value = v
     try {
       localStorage.setItem(key, JSON.stringify(v))

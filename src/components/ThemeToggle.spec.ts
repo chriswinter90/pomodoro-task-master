@@ -21,7 +21,9 @@ function createMockTheme(initialName: 'light' | 'dark') {
   let currentName = initialName
   return {
     global: { name: { value: currentName } },
-    change: (name: 'dark' | 'light') => { currentName = name },
+    change: (name: 'dark' | 'light') => {
+      currentName = name
+    },
   }
 }
 

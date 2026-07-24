@@ -5,10 +5,18 @@ const mockStorage: Record<string, string> = {}
 Object.defineProperty(globalThis, 'localStorage', {
   value: {
     getItem: (key: string) => mockStorage[key] ?? null,
-    setItem: (key: string, value: string) => { mockStorage[key] = value },
-    removeItem: (key: string) => { delete mockStorage[key] },
-    clear: () => { for (const k of Object.keys(mockStorage)) delete mockStorage[k] },
-    get length() { return Object.keys(mockStorage).length },
+    setItem: (key: string, value: string) => {
+      mockStorage[key] = value
+    },
+    removeItem: (key: string) => {
+      delete mockStorage[key]
+    },
+    clear: () => {
+      for (const k of Object.keys(mockStorage)) delete mockStorage[k]
+    },
+    get length() {
+      return Object.keys(mockStorage).length
+    },
     key: (i: number) => Object.keys(mockStorage)[i] ?? null,
   },
   writable: true,
@@ -41,5 +49,23 @@ describe('useUserPreference', () => {
     setValue('new-value')
     expect(value.value).toBe('new-value')
     expect(mockStorage['my-key']).toBe(JSON.stringify('new-value'))
+  })
+
+  it('returns boolean fallback when key is missing', () => {
+    const { value } = useUserPreference('missing-bool', true)
+    expect(value.value).toBe(true)
+  })
+
+  it('loads boolean value from localStorage', () => {
+    mockStorage['bool-key'] = JSON.stringify(false)
+    const { value } = useUserPreference('bool-key', true)
+    expect(value.value).toBe(false)
+  })
+
+  it('persists boolean value to localStorage on setValue', () => {
+    const { value, setValue } = useUserPreference('bool-key', false)
+    setValue(true)
+    expect(value.value).toBe(true)
+    expect(mockStorage['bool-key']).toBe(JSON.stringify(true))
   })
 })
