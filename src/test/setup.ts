@@ -138,9 +138,9 @@ const VSwitchStub = defineComponent({
           h(
             'input',
             {
-              'type': 'checkbox',
-              'checked': !!props.modelValue,
-              'onChange': (e: Event) => {
+              type: 'checkbox',
+              checked: !!props.modelValue,
+              onChange: (e: Event) => {
                 emit('update:modelValue', (e.target as HTMLInputElement).checked)
               },
             },
