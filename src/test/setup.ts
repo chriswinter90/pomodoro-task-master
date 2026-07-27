@@ -151,6 +151,94 @@ const VSwitchStub = defineComponent({
   },
 })
 
+// --- VSelect ---
+const VSelectStub = defineComponent({
+  name: 'VSelect',
+  props: {
+    modelValue: [String, Number, Boolean, Object, Array],
+    items: Array,
+    label: String,
+  },
+  emits: ['update:modelValue'],
+  setup(props, { attrs, slots, emit }) {
+    return () =>
+      h(
+        'select',
+        {
+          'value': props.modelValue,
+          ...attrs,
+          'data-v-component': 'VSelect',
+          'onInput': (e: Event) => emit('update:modelValue', (e.target as HTMLSelectElement).value),
+        },
+        [
+          ...(props.items ?? []).map(item => {
+            const isObj = typeof item === 'object' && item !== null
+            const obj = isObj ? (item as { label?: string, title?: string, value?: string }) : null
+            const label = obj ? (obj.label ?? obj.title ?? String(item)) : String(item)
+            const value = obj ? (obj.value ?? item) : item
+            return h('option', { value }, label)
+          }),
+          slots.default?.(),
+        ],
+      )
+  },
+})
+
+// --- VTabs ---
+const VTabsStub = defineComponent({
+  name: 'VTabs',
+  props: {
+    modelValue: [String, Number],
+  },
+  emits: ['update:modelValue'],
+  setup(props, { attrs, slots, emit }) {
+    return () =>
+      h(
+        'div',
+        {
+          ...attrs,
+          'data-v-component': 'VTabs',
+          'onClick': (e: Event) => {
+            // Propagate VTab click to update modelValue
+            const target = (e.target as HTMLElement).closest('[data-v-component="VTab"]') as HTMLElement | null
+            if (target) {
+              const value = target.dataset.value
+              if (value !== null) {
+                emit('update:modelValue', value)
+              }
+            }
+          },
+        },
+        [
+          slots.default?.(),
+          slots.items?.(),
+        ],
+      )
+  },
+})
+
+// --- VTab ---
+const VTabStub = defineComponent({
+  name: 'VTab',
+  props: {
+    value: [String, Number],
+  },
+  emits: ['click'],
+  setup(props, { attrs, slots, emit }) {
+    return () =>
+      h(
+        'button',
+        {
+          ...attrs,
+          'data-v-component': 'VTab',
+          'data-value': String(props.value),
+          'onClick': (e: MouseEvent) => emit('click', e),
+        },
+        slots.default?.(),
+      )
+  },
+})
+
 // --- Generic pass-through stubs ---
 function createPassthroughStub(tagName: string, htmlTag = 'div') {
   return defineComponent({
@@ -201,6 +289,9 @@ const vuetifyStubs: Record<string, ReturnType<typeof defineComponent>> = {
   VCardActions: createPassthroughStub('VCardActions'),
   VDialog: createPassthroughStub('VDialog'),
   VSwitch: VSwitchStub,
+  VSelect: VSelectStub,
+  VTabs: VTabsStub,
+  VTab: VTabStub,
 }
 
 config.global.stubs = { ...config.global.stubs, ...vuetifyStubs }
