@@ -13,7 +13,7 @@ A simple task management application inspired by the Pomodoro technique, designe
 - [ ] Flashy flashy
   - When timer is inactive for 5 minutes
   - During break time 
-- [ ] User Settings
+- [x] User Settings
   - Flashy flashy on inactive timer
     - If on customize length of inactivity time
   - Light mode/dark mode (default dark)
