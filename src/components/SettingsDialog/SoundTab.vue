@@ -70,7 +70,7 @@
 
 <script setup lang="ts">
   import { computed, reactive } from 'vue'
-  import { useUserPreferencesStore, type SoundTypeStr } from '@/stores/userPreferences'
+  import { type SoundTypeStr, useUserPreferencesStore } from '@/stores/userPreferences'
   import { type SoundConfig, SoundType, useSound } from '@/components/composables/sound'
 
   const store = useUserPreferencesStore()
@@ -82,11 +82,11 @@
     return type === SoundType.WorkEnd ? 'Work End' : 'Break End'
   }
 
-  // Global sound toggle — reads from store, writes via setSoundEnabled
+  // Global sound toggle — reads from store, writes directly
   const soundEnabledPref = computed({
     get: () => store.soundEnabled,
     set: (value: boolean) => {
-      store.setSoundEnabled(value)
+      store.soundEnabled = value
     },
   })
 
@@ -100,8 +100,8 @@
   })
 
   function togglePerType(type: SoundType) {
-    const current = perTypeEnabled[type]
-    store.setPerTypeSoundEnabled(type as SoundTypeStr, !current)
+    const current = perTypeEnabled.value[type]
+    store.perTypeSoundEnabled[type as SoundTypeStr] = !current
   }
 
   // Reactive frequency arrays and durations per sound type

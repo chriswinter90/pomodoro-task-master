@@ -32,10 +32,6 @@ vi.mock('@/stores/userPreferences', () => ({
     listView: 'kanban',
     soundEnabled: true,
     perTypeSoundEnabled: { workEnd: true, breakEnd: true },
-    setTheme: vi.fn(),
-    setListView: vi.fn(),
-    setSoundEnabled: vi.fn(),
-    setPerTypeSoundEnabled: vi.fn(),
   }),
 }))
 

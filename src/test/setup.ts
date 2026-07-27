@@ -200,9 +200,9 @@ const VTabsStub = defineComponent({
           'data-v-component': 'VTabs',
           'onClick': (e: Event) => {
             // Propagate VTab click to update modelValue
-            const target = (e.target as HTMLElement).closest('[data-v-component="VTab"]')
+            const target = (e.target as HTMLElement).closest('[data-v-component="VTab"]') as HTMLElement | null
             if (target) {
-              const value = target.getAttribute('data-value')
+              const value = target.dataset.value
               if (value !== null) {
                 emit('update:modelValue', value)
               }

@@ -1,5 +1,6 @@
 import type { VueWrapper } from '@vue/test-utils'
 import { mount } from '@vue/test-utils'
+import { reactive } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import AppearanceTab from './AppearanceTab.vue'
 
@@ -26,18 +27,15 @@ Object.defineProperty(globalThis, 'localStorage', {
 })
 
 // --- Mock useUserPreferencesStore ---
-let mockTheme = 'system'
-let mockListView = 'kanban'
-const mockSetTheme = vi.fn()
-const mockSetListView = vi.fn()
+// Pinia auto-unwraps refs, so store.theme is a plain string.
+// Use reactive() to get plain property access.
+const mockStore = reactive({
+  theme: 'system' as string,
+  listView: 'kanban' as string,
+})
 
 vi.mock('@/stores/userPreferences', () => ({
-  useUserPreferencesStore: () => ({
-    theme: { get: () => mockTheme },
-    listView: { get: () => mockListView },
-    setTheme: mockSetTheme,
-    setListView: mockSetListView,
-  }),
+  useUserPreferencesStore: () => mockStore,
 }))
 
 // --- Vuetify useTheme() mock ---
@@ -59,8 +57,8 @@ describe('AppearanceTab', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    mockTheme = 'system'
-    mockListView = 'kanban'
+    mockStore.theme = 'system'
+    mockStore.listView = 'kanban'
     for (const k of Object.keys(mockStorage)) delete mockStorage[k]
   })
 
@@ -88,11 +86,13 @@ describe('AppearanceTab', () => {
     expect(selects.length).toBeGreaterThanOrEqual(2)
   })
 
-  it('theme change calls store setTheme and applies via useTheme().change()', async () => {
+  it('theme change mutates store.theme and applies via useTheme().change()', async () => {
     let lastThemeChange: string | null = null
     const mockThemeObj = {
       global: { name: { value: 'light' } },
-      change: (name: string) => { lastThemeChange = name },
+      change: (name: string) => {
+        lastThemeChange = name
+      },
     }
     wrapper = mount(AppearanceTab, {
       global: {
@@ -102,15 +102,17 @@ describe('AppearanceTab', () => {
     const selects = wrapper.findAll('[data-v-component="VSelect"]')
     const themeSelect = selects[0]!
     await themeSelect.setValue('dark')
-    expect(mockSetTheme).toHaveBeenCalledWith('dark')
+    expect(mockStore.theme).toBe('dark')
     expect(lastThemeChange).toBe('dark')
   })
 
-  it('system theme calls applySystemTheme with window.matchMedia', async () => {
+  it('system theme mutates store.theme and calls applySystemTheme with window.matchMedia', async () => {
     let lastThemeChange: string | null = null
     const mockThemeObj = {
       global: { name: { value: 'light' } },
-      change: (name: string) => { lastThemeChange = name },
+      change: (name: string) => {
+        lastThemeChange = name
+      },
     }
     const originalMatchMedia = window.matchMedia
     Object.defineProperty(window, 'matchMedia', {
@@ -125,7 +127,7 @@ describe('AppearanceTab', () => {
     const selects = wrapper.findAll('[data-v-component="VSelect"]')
     const themeSelect = selects[0]!
     await themeSelect.setValue('system')
-    expect(mockSetTheme).toHaveBeenCalledWith('system')
+    expect(mockStore.theme).toBe('system')
     expect(lastThemeChange).toBe('dark') // dark mode detected
     Object.defineProperty(window, 'matchMedia', {
       writable: true,
@@ -133,7 +135,7 @@ describe('AppearanceTab', () => {
     })
   })
 
-  it('list view change calls store setListView', async () => {
+  it('list view change mutates store.listView', async () => {
     wrapper = mount(AppearanceTab, {
       global: {
         provide: { [ThemeSymbol]: createMockTheme('light') },
@@ -142,6 +144,6 @@ describe('AppearanceTab', () => {
     const selects = wrapper.findAll('[data-v-component="VSelect"]')
     const listViewSelect = selects[1]!
     await listViewSelect.setValue('list')
-    expect(mockSetListView).toHaveBeenCalledWith('list')
+    expect(mockStore.listView).toBe('list')
   })
 })

@@ -1,3 +1,4 @@
+import { reactive } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 // Mock the persist module — configs start at defaults
@@ -6,16 +7,14 @@ vi.mock('@/stores/persist', () => ({
   saveToLocalStorage: vi.fn(),
 }))
 
-// Create a mutable store mock
-const mockSetSoundEnabled = vi.fn()
-const mockStoreState = {
+// Pinia auto-unwraps refs, so use reactive() for plain property access
+const mockStore = reactive({
   soundEnabled: true,
   perTypeSoundEnabled: { workEnd: true, breakEnd: true },
-  setSoundEnabled: mockSetSoundEnabled,
-}
+})
 
 vi.mock('@/stores/userPreferences', () => ({
-  useUserPreferencesStore: vi.fn(() => mockStoreState),
+  useUserPreferencesStore: vi.fn(() => mockStore),
 }))
 
 // Re-import after mocking
@@ -24,9 +23,9 @@ const { useSound, SoundType } = await import('./sound')
 describe('useSound', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockSetSoundEnabled.mockClear()
-    mockStoreState.soundEnabled = true
-    mockStoreState.perTypeSoundEnabled = { workEnd: true, breakEnd: true }
+    mockStore.soundEnabled = true
+    mockStore.perTypeSoundEnabled.workEnd = true
+    mockStore.perTypeSoundEnabled.breakEnd = true
 
     // Mock AudioContext
     window.AudioContext = class {
@@ -40,6 +39,7 @@ describe('useSound', () => {
           stop: vi.fn(),
         }
       }
+
       createGain() {
         return {
           gain: {
@@ -49,6 +49,7 @@ describe('useSound', () => {
           connect: vi.fn(),
         }
       }
+
       resume() {}
       close() {}
     } as unknown as typeof window.AudioContext
@@ -56,8 +57,8 @@ describe('useSound', () => {
 
   describe('playSound per-type enabled check', () => {
     it('does not create AudioContext when per-type is disabled for workEnd', () => {
-      // Disable workEnd in the mocked store
-      mockStoreState.perTypeSoundEnabled = { workEnd: false, breakEnd: true }
+      mockStore.perTypeSoundEnabled.workEnd = false
+      mockStore.perTypeSoundEnabled.breakEnd = true
 
       const { playSound } = useSound()
 
@@ -66,9 +67,16 @@ describe('useSound', () => {
         constructor() {
           audioContextCreated = true
         }
+
         currentTime = 0
-        createOscillator() { return {} }
-        createGain() { return {} }
+        createOscillator() {
+          return {}
+        }
+
+        createGain() {
+          return {}
+        }
+
         resume() {}
         close() {}
       } as unknown as typeof window.AudioContext
@@ -78,7 +86,8 @@ describe('useSound', () => {
     })
 
     it('does not create AudioContext when per-type is disabled for breakEnd', () => {
-      mockStoreState.perTypeSoundEnabled = { workEnd: true, breakEnd: false }
+      mockStore.perTypeSoundEnabled.workEnd = true
+      mockStore.perTypeSoundEnabled.breakEnd = false
 
       const { playSound } = useSound()
 
@@ -87,9 +96,16 @@ describe('useSound', () => {
         constructor() {
           audioContextCreated = true
         }
+
         currentTime = 0
-        createOscillator() { return {} }
-        createGain() { return {} }
+        createOscillator() {
+          return {}
+        }
+
+        createGain() {
+          return {}
+        }
+
         resume() {}
         close() {}
       } as unknown as typeof window.AudioContext
@@ -99,7 +115,8 @@ describe('useSound', () => {
     })
 
     it('creates AudioContext when per-type is enabled', () => {
-      mockStoreState.perTypeSoundEnabled = { workEnd: true, breakEnd: true }
+      mockStore.perTypeSoundEnabled.workEnd = true
+      mockStore.perTypeSoundEnabled.breakEnd = true
 
       const { playSound } = useSound()
 
@@ -108,6 +125,7 @@ describe('useSound', () => {
         constructor() {
           audioContextCreated = true
         }
+
         currentTime = 0
         createOscillator() {
           return {
@@ -118,12 +136,14 @@ describe('useSound', () => {
             stop: vi.fn(),
           }
         }
+
         createGain() {
           return {
             gain: { setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() },
             connect: vi.fn(),
           }
         }
+
         resume() {}
         close() {}
       } as unknown as typeof window.AudioContext
@@ -133,8 +153,9 @@ describe('useSound', () => {
     })
 
     it('does not create AudioContext when global soundEnabled is false', () => {
-      mockStoreState.soundEnabled = false
-      mockStoreState.perTypeSoundEnabled = { workEnd: true, breakEnd: true }
+      mockStore.soundEnabled = false
+      mockStore.perTypeSoundEnabled.workEnd = true
+      mockStore.perTypeSoundEnabled.breakEnd = true
 
       const { playSound } = useSound()
 
@@ -143,9 +164,16 @@ describe('useSound', () => {
         constructor() {
           audioContextCreated = true
         }
+
         currentTime = 0
-        createOscillator() { return {} }
-        createGain() { return {} }
+        createOscillator() {
+          return {}
+        }
+
+        createGain() {
+          return {}
+        }
+
         resume() {}
         close() {}
       } as unknown as typeof window.AudioContext
@@ -161,10 +189,10 @@ describe('useSound', () => {
       expect(soundEnabled.value).toBe(true)
     })
 
-    it('calls setSoundEnabled when set', () => {
+    it('mutates store.soundEnabled when set', () => {
       const { soundEnabled } = useSound()
       soundEnabled.value = false
-      expect(mockSetSoundEnabled).toHaveBeenCalledWith(false)
+      expect(mockStore.soundEnabled).toBe(false)
     })
   })
 })

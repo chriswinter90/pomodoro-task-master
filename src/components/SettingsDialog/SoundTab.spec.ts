@@ -1,5 +1,6 @@
 import type { VueWrapper } from '@vue/test-utils'
 import { mount } from '@vue/test-utils'
+import { reactive } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import SoundTab from './SoundTab.vue'
 
@@ -25,12 +26,6 @@ Object.defineProperty(globalThis, 'localStorage', {
   writable: true,
 })
 
-// --- SoundType enum values (mirror sound.ts) ---
-const SoundType = {
-  WorkEnd: 'workEnd',
-  BreakEnd: 'breakEnd',
-} as const
-
 // --- Mock useSound composable ---
 const mockGetConfig = vi.fn().mockReturnValue({
   frequencies: [523.25, 659.25, 783.99],
@@ -49,22 +44,14 @@ vi.mock('@/components/composables/sound', () => ({
 }))
 
 // --- Mock useUserPreferencesStore ---
-let mockSoundEnabled = true
-let mockPerTypeWorkEnd = true
-let mockPerTypeBreakEnd = true
-const mockSetSoundEnabled = vi.fn()
-const mockSetPerTypeSoundEnabled = vi.fn()
+// Pinia auto-unwraps refs, so use reactive() for plain property access
+const mockStore = reactive({
+  soundEnabled: true,
+  perTypeSoundEnabled: { workEnd: true, breakEnd: true },
+})
 
 vi.mock('@/stores/userPreferences', () => ({
-  useUserPreferencesStore: () => ({
-    soundEnabled: mockSoundEnabled,
-    perTypeSoundEnabled: {
-      get workEnd() { return mockPerTypeWorkEnd },
-      get breakEnd() { return mockPerTypeBreakEnd },
-    },
-    setSoundEnabled: mockSetSoundEnabled,
-    setPerTypeSoundEnabled: mockSetPerTypeSoundEnabled,
-  }),
+  useUserPreferencesStore: () => mockStore,
 }))
 
 // --- Vuetify useTheme() mock ---
@@ -86,9 +73,9 @@ describe('SoundTab', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
-    mockSoundEnabled = true
-    mockPerTypeWorkEnd = true
-    mockPerTypeBreakEnd = true
+    mockStore.soundEnabled = true
+    mockStore.perTypeSoundEnabled.workEnd = true
+    mockStore.perTypeSoundEnabled.breakEnd = true
     for (const k of Object.keys(mockStorage)) delete mockStorage[k]
 
     mockGetConfig.mockImplementation((type: string) => {
@@ -146,7 +133,7 @@ describe('SoundTab', () => {
     expect(saveButtons.length).toBeGreaterThanOrEqual(2)
   })
 
-  it('global toggle calls store setSoundEnabled', async () => {
+  it('global toggle mutates store.soundEnabled', async () => {
     wrapper = mount(SoundTab, {
       global: {
         provide: { [ThemeSymbol]: createMockTheme('light') },
@@ -157,11 +144,11 @@ describe('SoundTab', () => {
     if (globalToggle) {
       const input = globalToggle.find('input[type="checkbox"]')
       await input.setValue(false)
-      expect(mockSetSoundEnabled).toHaveBeenCalledWith(false)
+      expect(mockStore.soundEnabled).toBe(false)
     }
   })
 
-  it('per-type toggle calls store setPerTypeSoundEnabled with flipped value', async () => {
+  it('per-type toggle mutates store.perTypeSoundEnabled', async () => {
     wrapper = mount(SoundTab, {
       global: {
         provide: { [ThemeSymbol]: createMockTheme('light') },
@@ -174,10 +161,7 @@ describe('SoundTab', () => {
       const input = perTypeToggle.find('input[type="checkbox"]')
       const wasChecked = (input.element as HTMLInputElement).checked
       await input.setValue(!wasChecked)
-      expect(mockSetPerTypeSoundEnabled).toHaveBeenCalled()
-      expect(mockSetPerTypeSoundEnabled.mock.calls[0]![0]).toBe('workEnd')
-      // Toggle should flip the value that was displayed
-      expect(mockSetPerTypeSoundEnabled.mock.calls[0]![1]).toBe(!wasChecked)
+      expect(mockStore.perTypeSoundEnabled.workEnd).toBe(!wasChecked)
     }
   })
 

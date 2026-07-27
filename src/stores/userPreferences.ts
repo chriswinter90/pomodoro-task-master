@@ -27,7 +27,7 @@ export interface UserPreferencesState {
   perTypeSoundEnabled: Record<SoundTypeStr, boolean>
 }
 
-export const useUserPreferencesStore = defineStore('userPreferences', {
+const _useUserPreferencesStore = defineStore('userPreferences', {
   state: (): UserPreferencesState => ({
     theme: loadFromLocalStorage<ThemeValue>('taskMasterTheme', () => 'system'),
     listView: loadFromLocalStorage<ListViewValue>('taskMasterDefaultView', () => 'kanban'),
@@ -45,53 +45,44 @@ export const useUserPreferencesStore = defineStore('userPreferences', {
       },
     ),
   }),
-  actions: {
-    /**
-     * Set the application theme and persist to localStorage.
-     * @param value - The new theme value
-     */
-    setTheme(value: ThemeValue): void {
-      const validThemes: ThemeValue[] = ['system', 'light', 'dark']
-      if (!validThemes.includes(value)) {
-        throw new Error(`Invalid theme: ${value}`)
-      }
-      this.theme = value
-      saveToLocalStorage('taskMasterTheme', value)
-    },
-
-    /**
-     * Set the default list view layout and persist to localStorage.
-     * @param value - The new list view value
-     */
-    setListView(value: ListViewValue): void {
-      const validViews: ListViewValue[] = ['list', 'kanban']
-      if (!validViews.includes(value)) {
-        throw new Error(`Invalid list view: ${value}`)
-      }
-      this.listView = value
-      saveToLocalStorage('taskMasterDefaultView', value)
-    },
-
-    /**
-     * Enable or disable all sounds and persist to localStorage.
-     * @param value - Whether sounds are enabled globally
-     */
-    setSoundEnabled(value: boolean): void {
-      this.soundEnabled = value
-      saveToLocalStorage('taskMasterSound', value)
-    },
-
-    /**
-     * Enable or disable sound for a specific event type and persist to localStorage.
-     * @param type - The sound event type
-     * @param value - Whether sound is enabled for this type
-     */
-    setPerTypeSoundEnabled(type: SoundTypeStr, value: boolean): void {
-      if (type !== 'workEnd' && type !== 'breakEnd') {
-        throw new Error(`Invalid sound type: ${type}`)
-      }
-      this.perTypeSoundEnabled[type] = value
-      saveToLocalStorage('taskMasterSoundPerType', { ...this.perTypeSoundEnabled })
-    },
-  },
 })
+
+/** Mapping of state property names to their localStorage keys. */
+const PERSIST_KEYS: Record<string, string> = {
+  theme: 'taskMasterTheme',
+  listView: 'taskMasterDefaultView',
+  soundEnabled: 'taskMasterSound',
+  perTypeSoundEnabled: 'taskMasterSoundPerType',
+}
+
+// Track which store instances already have the subscription set up
+const _subscribedStores = new WeakSet<any>()
+
+export const useUserPreferencesStore = ((pinia?: any) => {
+  const store = _useUserPreferencesStore(pinia)
+  if (!_subscribedStores.has(store)) {
+    _subscribedStores.add(store)
+
+    // Snapshot initial state so the first real change has a baseline to compare against.
+    // Vue skips same-value assignments, so a "prime" mutation won't work.
+    let previousState: Record<string, unknown> = JSON.parse(
+      JSON.stringify(store.$state),
+    )
+
+    store.$subscribe((_mutation, state) => {
+      const currentState = state as Record<string, unknown>
+
+      for (const [prop, key] of Object.entries(PERSIST_KEYS)) {
+        const newValue = currentState[prop]
+        const oldValue = previousState[prop]
+
+        if (JSON.stringify(oldValue) !== JSON.stringify(newValue)) {
+          saveToLocalStorage(key, newValue)
+        }
+      }
+
+      previousState = JSON.parse(JSON.stringify(currentState))
+    }, { flush: 'sync' })
+  }
+  return store
+}) as typeof _useUserPreferencesStore

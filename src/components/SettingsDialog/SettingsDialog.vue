@@ -33,24 +33,24 @@
 </template>
 
 <script setup lang="ts">
-import { computed, ref } from 'vue'
-import AppearanceTab from './AppearanceTab.vue'
-import SoundTab from './SoundTab.vue'
+  import { computed, ref } from 'vue'
+  import AppearanceTab from './AppearanceTab.vue'
+  import SoundTab from './SoundTab.vue'
 
-const props = defineProps<{
-  modelValue: boolean
-}>()
+  const props = defineProps<{
+    modelValue: boolean
+  }>()
 
-const emit = defineEmits<{
-  'update:modelValue': [value: boolean]
-}>()
+  const emit = defineEmits<{
+    'update:modelValue': [value: boolean]
+  }>()
 
-const open = computed({
-  get: () => props.modelValue,
-  set: (value: boolean) => emit('update:modelValue', value),
-})
+  const open = computed({
+    get: () => props.modelValue,
+    set: (value: boolean) => emit('update:modelValue', value),
+  })
 
-const tab = ref('appearance')
+  const tab = ref('appearance')
 </script>
 
 <style scoped lang="scss">

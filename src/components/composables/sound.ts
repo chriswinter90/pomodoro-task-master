@@ -38,7 +38,7 @@ export function useSound(): {
   const soundEnabled = computed<boolean>({
     get: () => store.soundEnabled,
     set: (v: boolean) => {
-      store.setSoundEnabled(v)
+      store.soundEnabled = v
     },
   })
 
