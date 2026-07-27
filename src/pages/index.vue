@@ -1,6 +1,6 @@
 <template>
   <div class="page-container">
-    <ThemeToggle />
+    <SettingsDialog v-model="settingsOpen" />
     <div class="d-flex align-center mb-4">
       <v-btn-toggle v-model="viewMode" class="mr-4" density="compact" mandatory>
         <v-btn value="list">
@@ -25,8 +25,13 @@
 </template>
 
 <script setup lang="ts">
+  import { useUserPreference } from '@/composables/useUserPreference'
+
   const showPanel = ref(false)
-  const viewMode = ref<'list' | 'kanban'>('list')
+  const settingsOpen = ref(false)
+  const { value: savedView } = useUserPreference('taskMasterDefaultView', 'kanban')
+  const raw = savedView.value as string
+  const viewMode = ref<'list' | 'kanban'>((raw === 'list' || raw === 'kanban') ? raw : 'kanban')
 </script>
 
 <style scoped lang="scss">

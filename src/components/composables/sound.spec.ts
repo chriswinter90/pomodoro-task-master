@@ -41,7 +41,7 @@ function createMockAudioContext() {
           type: 'sine',
           frequency: {
             setValueAtTime (freq: number) {
-              calls.createOscillator[calls.createOscillator.length - 1]!.freq = freq
+              calls.createOscillator.at(-1)!.freq = freq
             },
           },
           connect: vi.fn(),
