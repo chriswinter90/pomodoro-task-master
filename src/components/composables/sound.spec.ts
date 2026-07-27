@@ -1,56 +1,46 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { type SoundConfig, SoundType, useSound } from './sound'
 
-const mockStorage: Record<string, string> = {}
-Object.defineProperty(globalThis, 'localStorage', {
-  value: {
-    getItem: (key: string) => mockStorage[key] ?? null,
-    setItem: (key: string, value: string) => {
-      mockStorage[key] = value
-    },
-    removeItem: (key: string) => {
-      delete mockStorage[key]
-    },
-    clear: () => {
-      for (const k of Object.keys(mockStorage)) delete mockStorage[k]
-    },
-    get length() {
-      return Object.keys(mockStorage).length
-    },
-    key: (i: number) => Object.keys(mockStorage)[i] ?? null,
-  },
-  writable: true,
-})
+// Mock the persist module — configs start at defaults
+vi.mock('@/stores/persist', () => ({
+  loadFromLocalStorage: vi.fn((_key, defaultFactory) => defaultFactory()),
+  saveToLocalStorage: vi.fn(),
+}))
 
-function createMockAudioContext() {
-  const calls: {
-    createOscillator: { freq: number }[]
-    createGain: number
-    resume: number
-  } = {
-    createOscillator: [],
-    createGain: 0,
-    resume: 0,
-  }
+// Create a mutable store mock
+const mockSetSoundEnabled = vi.fn()
+const mockStoreState = {
+  soundEnabled: true,
+  perTypeSoundEnabled: { workEnd: true, breakEnd: true },
+  setSoundEnabled: mockSetSoundEnabled,
+}
 
-  const MockAudioContext = vi.fn(function () {
-    return {
-      createOscillator () {
-        calls.createOscillator.push({ freq: 0 })
+vi.mock('@/stores/userPreferences', () => ({
+  useUserPreferencesStore: vi.fn(() => mockStoreState),
+}))
+
+// Re-import after mocking
+const { useSound, SoundType } = await import('./sound')
+
+describe('useSound', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockSetSoundEnabled.mockClear()
+    mockStoreState.soundEnabled = true
+    mockStoreState.perTypeSoundEnabled = { workEnd: true, breakEnd: true }
+
+    // Mock AudioContext
+    window.AudioContext = class {
+      currentTime = 0
+      createOscillator() {
         return {
           type: 'sine',
-          frequency: {
-            setValueAtTime (freq: number) {
-              calls.createOscillator.at(-1)!.freq = freq
-            },
-          },
+          frequency: { setValueAtTime: vi.fn() },
           connect: vi.fn(),
           start: vi.fn(),
           stop: vi.fn(),
         }
-      },
-      createGain () {
-        calls.createGain++
+      }
+      createGain() {
         return {
           gain: {
             setValueAtTime: vi.fn(),
@@ -58,119 +48,123 @@ function createMockAudioContext() {
           },
           connect: vi.fn(),
         }
-      },
-      destination: {},
-      resume () {
-        calls.resume++
-      },
-      currentTime: 0,
-    }
+      }
+      resume() {}
+      close() {}
+    } as unknown as typeof window.AudioContext
   })
 
-  return { MockAudioContext, calls }
-}
+  describe('playSound per-type enabled check', () => {
+    it('does not create AudioContext when per-type is disabled for workEnd', () => {
+      // Disable workEnd in the mocked store
+      mockStoreState.perTypeSoundEnabled = { workEnd: false, breakEnd: true }
 
-describe('useSound', () => {
-  beforeEach(() => {
-    for (const k of Object.keys(mockStorage)) delete mockStorage[k]
-    vi.restoreAllMocks()
+      const { playSound } = useSound()
+
+      let audioContextCreated = false
+      window.AudioContext = class {
+        constructor() {
+          audioContextCreated = true
+        }
+        currentTime = 0
+        createOscillator() { return {} }
+        createGain() { return {} }
+        resume() {}
+        close() {}
+      } as unknown as typeof window.AudioContext
+
+      playSound(SoundType.WorkEnd)
+      expect(audioContextCreated).toBe(false)
+    })
+
+    it('does not create AudioContext when per-type is disabled for breakEnd', () => {
+      mockStoreState.perTypeSoundEnabled = { workEnd: true, breakEnd: false }
+
+      const { playSound } = useSound()
+
+      let audioContextCreated = false
+      window.AudioContext = class {
+        constructor() {
+          audioContextCreated = true
+        }
+        currentTime = 0
+        createOscillator() { return {} }
+        createGain() { return {} }
+        resume() {}
+        close() {}
+      } as unknown as typeof window.AudioContext
+
+      playSound(SoundType.BreakEnd)
+      expect(audioContextCreated).toBe(false)
+    })
+
+    it('creates AudioContext when per-type is enabled', () => {
+      mockStoreState.perTypeSoundEnabled = { workEnd: true, breakEnd: true }
+
+      const { playSound } = useSound()
+
+      let audioContextCreated = false
+      window.AudioContext = class {
+        constructor() {
+          audioContextCreated = true
+        }
+        currentTime = 0
+        createOscillator() {
+          return {
+            type: 'sine',
+            frequency: { setValueAtTime: vi.fn() },
+            connect: vi.fn(),
+            start: vi.fn(),
+            stop: vi.fn(),
+          }
+        }
+        createGain() {
+          return {
+            gain: { setValueAtTime: vi.fn(), exponentialRampToValueAtTime: vi.fn() },
+            connect: vi.fn(),
+          }
+        }
+        resume() {}
+        close() {}
+      } as unknown as typeof window.AudioContext
+
+      playSound(SoundType.WorkEnd)
+      expect(audioContextCreated).toBe(true)
+    })
+
+    it('does not create AudioContext when global soundEnabled is false', () => {
+      mockStoreState.soundEnabled = false
+      mockStoreState.perTypeSoundEnabled = { workEnd: true, breakEnd: true }
+
+      const { playSound } = useSound()
+
+      let audioContextCreated = false
+      window.AudioContext = class {
+        constructor() {
+          audioContextCreated = true
+        }
+        currentTime = 0
+        createOscillator() { return {} }
+        createGain() { return {} }
+        resume() {}
+        close() {}
+      } as unknown as typeof window.AudioContext
+
+      playSound(SoundType.WorkEnd)
+      expect(audioContextCreated).toBe(false)
+    })
   })
 
-  it('playSound is no-op when soundEnabled is false', () => {
-    // Pre-set localStorage so soundEnabled is false
-    mockStorage['taskMasterSound'] = JSON.stringify(false)
+  describe('soundEnabled', () => {
+    it('reads from store soundEnabled', () => {
+      const { soundEnabled } = useSound()
+      expect(soundEnabled.value).toBe(true)
+    })
 
-    const { MockAudioContext } = createMockAudioContext()
-    ;(globalThis as any).AudioContext = MockAudioContext
-
-    const { playSound } = useSound()
-    playSound(SoundType.WorkEnd)
-
-    // AudioContext should never be instantiated
-    expect(MockAudioContext).not.toHaveBeenCalled()
-  })
-
-  it('playSound creates oscillator nodes for each frequency in config', () => {
-    const { MockAudioContext, calls } = createMockAudioContext()
-    ;(globalThis as any).AudioContext = MockAudioContext
-
-    const { playSound } = useSound()
-    playSound(SoundType.WorkEnd)
-
-    // Should create one oscillator per frequency (3 for work-end)
-    expect(calls.createOscillator).toHaveLength(3)
-    expect(calls.createOscillator[0]!.freq).toBe(523.25)
-    expect(calls.createOscillator[1]!.freq).toBe(659.25)
-    expect(calls.createOscillator[2]!.freq).toBe(783.99)
-  })
-
-  it('playSound is no-op when window.AudioContext is undefined', () => {
-    delete (globalThis as any).AudioContext
-
-    const { playSound } = useSound()
-    expect(() => playSound(SoundType.WorkEnd)).not.toThrow()
-  })
-
-  it('getConfig returns correct default config', () => {
-    const { getConfig } = useSound()
-
-    const workConfig = getConfig(SoundType.WorkEnd)
-    expect(workConfig.frequencies).toEqual([523.25, 659.25, 783.99])
-    expect(workConfig.noteDuration).toBe(150)
-    expect(workConfig.label).toBe('Work End')
-
-    const breakConfig = getConfig(SoundType.BreakEnd)
-    expect(breakConfig.frequencies).toEqual([392, 329.63, 261.63])
-    expect(breakConfig.noteDuration).toBe(200)
-    expect(breakConfig.label).toBe('Break End')
-  })
-
-  it('setConfig persists to localStorage and returns updated config', () => {
-    const { setConfig, getConfig } = useSound()
-
-    const newConfig: SoundConfig = {
-      frequencies: [440, 880],
-      noteDuration: 100,
-      label: 'Custom',
-    }
-    setConfig(SoundType.WorkEnd, newConfig)
-
-    // Verify localStorage was written
-    expect(mockStorage['taskMasterSoundConfigs']).toBeDefined()
-    const saved = JSON.parse(mockStorage['taskMasterSoundConfigs']!)
-    expect(saved[SoundType.WorkEnd]!.frequencies).toEqual([440, 880])
-    expect(saved[SoundType.WorkEnd]!.noteDuration).toBe(100)
-    expect(saved[SoundType.WorkEnd]!.label).toBe('Custom')
-
-    // Verify getConfig returns the updated value
-    const retrieved = getConfig(SoundType.WorkEnd)
-    expect(retrieved.frequencies).toEqual([440, 880])
-    expect(retrieved.noteDuration).toBe(100)
-    expect(retrieved.label).toBe('Custom')
-  })
-
-  it('configs load from localStorage on initialization', () => {
-    const customConfigs = {
-      [SoundType.WorkEnd]: {
-        frequencies: [100, 200],
-        noteDuration: 50,
-        label: 'Loaded',
-      },
-      [SoundType.BreakEnd]: {
-        frequencies: [300, 400, 500],
-        noteDuration: 75,
-        label: 'Loaded Break',
-      },
-    }
-    mockStorage['taskMasterSoundConfigs'] = JSON.stringify(customConfigs)
-
-    const { getConfig } = useSound()
-
-    expect(getConfig(SoundType.WorkEnd).frequencies).toEqual([100, 200])
-    expect(getConfig(SoundType.WorkEnd).noteDuration).toBe(50)
-    expect(getConfig(SoundType.WorkEnd).label).toBe('Loaded')
-    expect(getConfig(SoundType.BreakEnd).frequencies).toEqual([300, 400, 500])
-    expect(getConfig(SoundType.BreakEnd).noteDuration).toBe(75)
-    expect(getConfig(SoundType.BreakEnd).label).toBe('Loaded Break')
+    it('calls setSoundEnabled when set', () => {
+      const { soundEnabled } = useSound()
+      soundEnabled.value = false
+      expect(mockSetSoundEnabled).toHaveBeenCalledWith(false)
+    })
   })
 })

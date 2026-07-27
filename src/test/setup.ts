@@ -191,13 +191,23 @@ const VTabsStub = defineComponent({
     modelValue: [String, Number],
   },
   emits: ['update:modelValue'],
-  setup(props, { attrs, slots }) {
+  setup(props, { attrs, slots, emit }) {
     return () =>
       h(
         'div',
         {
           ...attrs,
           'data-v-component': 'VTabs',
+          'onClick': (e: Event) => {
+            // Propagate VTab click to update modelValue
+            const target = (e.target as HTMLElement).closest('[data-v-component="VTab"]')
+            if (target) {
+              const value = target.getAttribute('data-value')
+              if (value !== null) {
+                emit('update:modelValue', value)
+              }
+            }
+          },
         },
         [
           slots.default?.(),
@@ -221,6 +231,7 @@ const VTabStub = defineComponent({
         {
           ...attrs,
           'data-v-component': 'VTab',
+          'data-value': String(props.value),
           'onClick': (e: MouseEvent) => emit('click', e),
         },
         slots.default?.(),

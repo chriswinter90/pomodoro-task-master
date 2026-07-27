@@ -1,6 +1,6 @@
 import { computed, type Ref } from 'vue'
-import { useUserPreference } from '@/composables/useUserPreference'
 import { loadFromLocalStorage, saveToLocalStorage } from '@/stores/persist'
+import { useUserPreferencesStore } from '@/stores/userPreferences'
 
 export enum SoundType {
   WorkEnd = 'workEnd',
@@ -34,13 +34,11 @@ export function useSound(): {
   setConfig: (type: SoundType, config: SoundConfig) => void
   soundEnabled: Ref<boolean>
 } {
-  // Narrow the union Ref<string | boolean> to Ref<boolean> via a computed,
-  // avoiding an unsafe `as` cast. Uses setValue to persist changes.
-  const pref = useUserPreference('taskMasterSound', true)
+  const store = useUserPreferencesStore()
   const soundEnabled = computed<boolean>({
-    get: () => typeof pref.value.value === 'boolean' ? pref.value.value : true,
+    get: () => store.soundEnabled,
     set: (v: boolean) => {
-      pref.setValue(v)
+      store.setSoundEnabled(v)
     },
   })
 
@@ -81,6 +79,10 @@ export function useSound(): {
 
   function playSound(type: SoundType) {
     if (!soundEnabled.value) return
+
+    // Check per-type enabled — skip if this specific sound type is disabled
+    const typeKey = type as 'workEnd' | 'breakEnd'
+    if (!store.perTypeSoundEnabled[typeKey]) return
 
     const AudioContextClass = window.AudioContext
     if (!AudioContextClass) return
