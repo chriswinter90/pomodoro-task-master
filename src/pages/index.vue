@@ -1,6 +1,6 @@
 <template>
   <div class="page-container">
-    <div class="d-flex flex-row justify-content-between">
+    <div class="title-bar">
       <h1>Task Master 9000</h1>
       <SettingsDialog v-model="settingsOpen" />
     </div>
@@ -30,5 +30,10 @@
   .page-container {
     height: 100vh;
     width: 100vw;
+  }
+  .title-bar {
+    display: flex;
+    justify-content: space-between;
+    margin: 5px 5px
   }
 </style>
