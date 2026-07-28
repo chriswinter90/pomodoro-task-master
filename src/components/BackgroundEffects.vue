@@ -34,7 +34,7 @@
     #f06595
   );
   background-size: 400% 400%;
-  animation: rainbow-cycle 12s ease infinite;
+  animation: rainbow-cycle 6s ease infinite;
 }
 
 </style>
