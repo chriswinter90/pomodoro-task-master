@@ -3,12 +3,14 @@ import { displayTime, useTimer } from '@/components/composables/timer.ts'
 import { SoundType, useSound } from '@/components/composables/sound.ts'
 import type { TimerData } from '@/stores/timers.ts'
 import { useTimerStateStore } from '@/stores/timerState'
+import { useInactivityStore } from '@/stores/inactivity.ts'
 
 export type TimerStatus = 'idle' | 'work' | 'countdown' | 'break'
 
 const COUNTDOWN_DURATION = 30 // seconds
 
 export function useTimerController(timerData: TimerData) {
+  const inactivityStore = useInactivityStore()
   const workTimerDuration = timerData.duration
   const breakTimerDuration = timerData.breakDuration ?? 300
 
@@ -148,6 +150,7 @@ export function useTimerController(timerData: TimerData) {
     workTimer.resetTimer()
     breakTimer.stopTimer()
     breakTimer.resetTimer()
+    inactivityStore.idleSeconds = 0
     mode.value = 'idle'
     countdownRemaining.value = 0
     workCompleted = false

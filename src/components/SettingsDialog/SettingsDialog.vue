@@ -54,10 +54,4 @@
 </script>
 
 <style scoped lang="scss">
-.settings-trigger {
-  position: fixed;
-  top: 16px;
-  right: 16px;
-  z-index: 10;
-}
 </style>

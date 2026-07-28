@@ -11,6 +11,8 @@ declare module 'vue' {
     AddTaskPanel: typeof import('./components/TaskPanel/AddTaskPanel.vue')['default']
     AddTimerPanel: typeof import('./components/TimerPanel/AddTimerPanel.vue')['default']
     AppearanceTab: typeof import('./components/SettingsDialog/AppearanceTab.vue')['default']
+    BackgroundEffects: typeof import('./components/BackgroundEffects.vue')['default']
+    InactivityEffectController: typeof import('./components/InactivityEffectController.vue')['default']
     KanbanBoard: typeof import('./components/TaskPanel/KanbanBoard.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']

@@ -1,7 +1,9 @@
 <template>
   <div class="page-container">
-    <SettingsDialog v-model="settingsOpen" />
-
+    <div class="d-flex flex-row justify-content-between">
+      <h1>Task Master 9000</h1>
+      <SettingsDialog v-model="settingsOpen" />
+    </div>
     <TaskPanel
       v-if="viewMode === 'list'"
       class="mb-8"

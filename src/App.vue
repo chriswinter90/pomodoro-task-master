@@ -1,6 +1,6 @@
 <template>
+  <InactivityEffectController />
   <v-app>
-    <InactivityEffectController />
     <router-view />
   </v-app>
 </template>
