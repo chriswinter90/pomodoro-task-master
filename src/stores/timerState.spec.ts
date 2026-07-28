@@ -1,6 +1,5 @@
 import { createPinia } from 'pinia'
-import { beforeEach, describe, expect, it } from 'vitest'
-
+import { describe, expect, it } from 'vitest'
 
 describe('useTimerStateStore', () => {
   async function createStore() {

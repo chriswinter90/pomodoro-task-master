@@ -2,16 +2,17 @@ import { computed, type ComputedRef, ref, watch } from 'vue'
 import { displayTime, useTimer } from '@/components/composables/timer.ts'
 import { SoundType, useSound } from '@/components/composables/sound.ts'
 import type { TimerData } from '@/stores/timers.ts'
+import { useTimerStateStore } from '@/stores/timerState'
 
-export type BreakMode = 'idle' | 'work' | 'countdown' | 'break'
+export type TimerStatus = 'idle' | 'work' | 'countdown' | 'break'
 
 const COUNTDOWN_DURATION = 30 // seconds
 
-export function useBreakController(timerData: TimerData) {
+export function useTimerController(timerData: TimerData) {
   const workTimerDuration = timerData.duration
   const breakTimerDuration = timerData.breakDuration ?? 300
 
-  const mode = ref<BreakMode>('idle')
+  const mode = ref<TimerStatus>('idle')
   const countdownRemaining = ref(0)
 
   // Sound playback
@@ -47,6 +48,15 @@ export function useBreakController(timerData: TimerData) {
     if (mode.value === 'work') return workTimer.timerRunning.value
     if (mode.value === 'break') return breakTimer.timerRunning.value
     return false
+  })
+
+  // Sync local state into the timerState Pinia store
+  const store = useTimerStateStore()
+  watch(mode, (val) => {
+    store.mode = val
+  })
+  watch(timerRunning, (val) => {
+    store.timerRunning = val
   })
 
   function requestNotificationPermission(): Promise<'default' | 'denied' | 'granted'> {
