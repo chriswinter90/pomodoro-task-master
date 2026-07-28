@@ -28,6 +28,7 @@
       :max="30"
       :step="1"
       label="Idle Time (minutes)"
+      thumb-label
       hide-details
       class="mt-4"
     />
