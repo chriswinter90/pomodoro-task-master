@@ -10,9 +10,8 @@ A simple task management application inspired by the Pomodoro technique, designe
 - [x] "Snooze" timer
 - [x] Add Kanban view
 - [x] Play sound
-- [ ] Flashy flashy
-  - When timer is inactive for 5 minutes
-  - During break time 
+- [x] Flashy flashy
+  - When a timer is inactive for 5 minutes
 - [x] User Settings
   - Flashy flashy on inactive timer
     - If on customize length of inactivity time
