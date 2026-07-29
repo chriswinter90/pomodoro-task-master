@@ -24,7 +24,7 @@
 
 .bg-effect-rainbow {
   background: linear-gradient(
-    120deg,
+    135deg,
     #ff6b6b,
     #ffa94d,
     #ffd43b,
@@ -42,13 +42,13 @@
 <style>
 @keyframes rainbow-cycle {
   0% {
-    background-position: 0% 50%;
+    background-position: 0 0;
   }
   50% {
-    background-position: 100% 50%;
+    background-position: 100% 100%;
   }
   100% {
-    background-position: 0% 50%;
+    background-position: 0 0;
   }
 }
 </style>
