@@ -25,6 +25,9 @@ export interface UserPreferencesState {
   listView: ListViewValue
   soundEnabled: boolean
   perTypeSoundEnabled: Record<SoundTypeStr, boolean>
+  attentionEnabled: boolean
+  attentionIdleMinutes: number
+  attentionEffectVariant: string
 }
 
 const _useUserPreferencesStore = defineStore('userPreferences', {
@@ -44,6 +47,9 @@ const _useUserPreferencesStore = defineStore('userPreferences', {
         }
       },
     ),
+    attentionEnabled: loadFromLocalStorage<boolean>('taskMasterAttentionEnabled', () => true),
+    attentionIdleMinutes: loadFromLocalStorage<number>('taskMasterAttentionIdleMinutes', () => 5),
+    attentionEffectVariant: loadFromLocalStorage<string>('taskMasterAttentionEffectVariant', () => 'rainbow'),
   }),
 })
 
@@ -53,6 +59,9 @@ const PERSIST_KEYS: Record<string, string> = {
   listView: 'taskMasterDefaultView',
   soundEnabled: 'taskMasterSound',
   perTypeSoundEnabled: 'taskMasterSoundPerType',
+  attentionEnabled: 'taskMasterAttentionEnabled',
+  attentionIdleMinutes: 'taskMasterAttentionIdleMinutes',
+  attentionEffectVariant: 'taskMasterAttentionEffectVariant',
 }
 
 // Track which store instances already have the subscription set up

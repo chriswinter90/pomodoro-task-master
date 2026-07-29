@@ -14,6 +14,32 @@
       hide-details
       class="mt-4"
     />
+
+    <v-switch
+      v-model="attentionEnabledPref"
+      label="Attention Effect"
+      hide-details
+      class="mt-4"
+    />
+
+    <v-slider
+      v-model="attentionIdleMinutesPref"
+      :min="1"
+      :max="30"
+      :step="1"
+      label="Idle Time (minutes)"
+      thumb-label
+      hide-details
+      class="mt-4"
+    />
+
+    <v-select
+      v-model="attentionEffectVariantPref"
+      :items="attentionEffectVariantOptions"
+      label="Effect"
+      hide-details
+      class="mt-4"
+    />
   </div>
 </template>
 
@@ -57,6 +83,31 @@
     get: () => store.listView,
     set: (val: ListViewValue) => {
       store.listView = val
+    },
+  })
+
+  const attentionEffectVariantOptions: { title: string, value: string }[] = [
+    { title: 'Rainbow', value: 'rainbow' },
+  ]
+
+  const attentionEnabledPref = computed({
+    get: () => store.attentionEnabled,
+    set: (val: boolean) => {
+      store.attentionEnabled = val
+    },
+  })
+
+  const attentionIdleMinutesPref = computed({
+    get: () => store.attentionIdleMinutes,
+    set: (val: number) => {
+      store.attentionIdleMinutes = val
+    },
+  })
+
+  const attentionEffectVariantPref = computed({
+    get: () => store.attentionEffectVariant,
+    set: (val: string) => {
+      store.attentionEffectVariant = val
     },
   })
 </script>

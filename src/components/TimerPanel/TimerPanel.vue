@@ -15,7 +15,7 @@
       </div>
     </div>
     <TimerControls
-      :mode="controller.mode"
+      :mode="timerState.mode"
       :sound-enabled="sound.soundEnabled"
       @start="controller.start()"
       @stop="controller.stop()"
@@ -26,7 +26,7 @@
     />
     <TimerDisplay
       :display-time-string="controller.displayTimeString"
-      :mode="controller.mode"
+      :mode="timerState.mode"
       :countdown-remaining="controller.countdownRemaining"
     />
     <AddTimerPanel v-model="showAddTimerPanel" />
@@ -36,26 +36,28 @@
 
 <script setup lang="ts">
   import { useTimersStore } from '@/stores/timers.ts'
-  import { useBreakController } from '@/components/composables/breakController.ts'
+  import { useTimerStateStore } from '@/stores/timerState.ts'
+  import { useTimerController } from '../composables/timerController.ts'
   import { useSound } from '@/components/composables/sound.ts'
   import AddTimerPanel from '@/components/TimerPanel/AddTimerPanel.vue'
   import SnoozePanel from '@/components/TimerPanel/SnoozePanel.vue'
 
   const timers = useTimersStore()
+  const timerState = useTimerStateStore()
 
   const sound = useSound()
 
   const showAddTimerPanel = ref(false)
   const showSnoozePanel = ref(false)
 
-  const controller = ref(useBreakController(
+  const controller = ref(useTimerController(
     timers.selectedTimer ?? timers.timers[0]!,
   ))
 
   watch(() => timers.selectedTimer, selectedTimer => {
     if (!selectedTimer) return
     controller.value.dispose()
-    controller.value = useBreakController(selectedTimer)
+    controller.value = useTimerController(selectedTimer)
   })
 
   function handleSnoozeConfirm(duration: number) {

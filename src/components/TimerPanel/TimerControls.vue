@@ -18,12 +18,12 @@
 </template>
 
 <script setup lang="ts">
-  import type { BreakMode } from '@/components/composables/breakController.ts'
+  import type { TimerStatus } from '../composables/timerController.ts'
 
   import type { Ref } from 'vue'
 
   defineProps<{
-    mode: BreakMode
+    mode: TimerStatus
     soundEnabled: Ref<boolean>
   }>()
   const emits = defineEmits<{

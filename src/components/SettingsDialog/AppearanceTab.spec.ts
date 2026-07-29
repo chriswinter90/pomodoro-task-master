@@ -1,8 +1,39 @@
 import type { VueWrapper } from '@vue/test-utils'
+import { defineComponent, h, reactive } from 'vue'
 import { mount } from '@vue/test-utils'
-import { reactive } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import AppearanceTab from './AppearanceTab.vue'
+
+// --- Mock VSwitch and VSlider (not auto-resolved by Vuetify test harness) ---
+const MockVSwitch = defineComponent({
+  props: ['modelValue', 'label'],
+  emits: ['update:modelValue'],
+  setup(props, { emit }) {
+    return () =>
+      h('input', {
+        'type': 'checkbox',
+        'data-v-component': 'VSwitch',
+        'data-label': String(props.label),
+        'checked': Boolean(props.modelValue),
+        'onChange': (e: Event) => emit('update:modelValue', (e.target as HTMLInputElement).checked),
+      })
+  },
+})
+
+const MockVSlider = defineComponent({
+  props: ['modelValue', 'label', 'min', 'max', 'step'],
+  emits: ['update:modelValue'],
+  setup(props, { emit }) {
+    return () =>
+      h('input', {
+        'type': 'range',
+        'data-v-component': 'VSlider',
+        'data-label': String(props.label),
+        'value': String(props.modelValue),
+        'onInput': (e: Event) => emit('update:modelValue', Number((e.target as HTMLInputElement).value)),
+      })
+  },
+})
 
 // --- Mock localStorage ---
 const mockStorage: Record<string, string> = {}
@@ -32,6 +63,9 @@ Object.defineProperty(globalThis, 'localStorage', {
 const mockStore = reactive({
   theme: 'system' as string,
   listView: 'kanban' as string,
+  attentionEnabled: false as boolean,
+  attentionIdleMinutes: 5 as number,
+  attentionEffectVariant: 'rainbow' as string,
 })
 
 vi.mock('@/stores/userPreferences', () => ({
@@ -55,10 +89,17 @@ function createMockTheme(initialName: 'light' | 'dark' | 'system') {
 describe('AppearanceTab', () => {
   let wrapper: VueWrapper
 
+  const baseGlobal = {
+    components: { VSwitch: MockVSwitch, VSlider: MockVSlider },
+  }
+
   beforeEach(() => {
     vi.clearAllMocks()
     mockStore.theme = 'system'
     mockStore.listView = 'kanban'
+    mockStore.attentionEnabled = false
+    mockStore.attentionIdleMinutes = 5
+    mockStore.attentionEffectVariant = 'rainbow'
     for (const k of Object.keys(mockStorage)) delete mockStorage[k]
   })
 
@@ -69,6 +110,7 @@ describe('AppearanceTab', () => {
   it('renders theme select with System/Light/Dark options', () => {
     wrapper = mount(AppearanceTab, {
       global: {
+        ...baseGlobal,
         provide: { [ThemeSymbol]: createMockTheme('light') },
       },
     })
@@ -79,6 +121,7 @@ describe('AppearanceTab', () => {
   it('renders list view select with List/Kanban options', () => {
     wrapper = mount(AppearanceTab, {
       global: {
+        ...baseGlobal,
         provide: { [ThemeSymbol]: createMockTheme('light') },
       },
     })
@@ -96,6 +139,7 @@ describe('AppearanceTab', () => {
     }
     wrapper = mount(AppearanceTab, {
       global: {
+        ...baseGlobal,
         provide: { [ThemeSymbol]: mockThemeObj },
       },
     })
@@ -121,6 +165,7 @@ describe('AppearanceTab', () => {
     })
     wrapper = mount(AppearanceTab, {
       global: {
+        ...baseGlobal,
         provide: { [ThemeSymbol]: mockThemeObj },
       },
     })
@@ -135,9 +180,82 @@ describe('AppearanceTab', () => {
     })
   })
 
+  it('renders attention switch', () => {
+    wrapper = mount(AppearanceTab, {
+      global: {
+        ...baseGlobal,
+        provide: { [ThemeSymbol]: createMockTheme('light') },
+      },
+    })
+    const switches = wrapper.findAll('[data-v-component="VSwitch"]')
+    expect(switches.length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('renders attention idle time slider', () => {
+    wrapper = mount(AppearanceTab, {
+      global: {
+        ...baseGlobal,
+        provide: { [ThemeSymbol]: createMockTheme('light') },
+      },
+    })
+    const sliders = wrapper.findAll('[data-v-component="VSlider"]')
+    expect(sliders.length).toBeGreaterThanOrEqual(1)
+  })
+
+  it('renders attention effect select', () => {
+    wrapper = mount(AppearanceTab, {
+      global: {
+        ...baseGlobal,
+        provide: { [ThemeSymbol]: createMockTheme('light') },
+      },
+    })
+    const selects = wrapper.findAll('[data-v-component="VSelect"]')
+    expect(selects.length).toBeGreaterThanOrEqual(3)
+  })
+
+  it('toggle switch mutates store.attentionEnabled', async () => {
+    wrapper = mount(AppearanceTab, {
+      global: {
+        ...baseGlobal,
+        provide: { [ThemeSymbol]: createMockTheme('light') },
+      },
+    })
+    const switches = wrapper.findAll('[data-v-component="VSwitch"]')
+    const switchEl = switches[0]!.find('input')
+    await switchEl.setValue(true)
+    expect(mockStore.attentionEnabled).toBe(true)
+  })
+
+  it('slider change mutates store.attentionIdleMinutes', async () => {
+    wrapper = mount(AppearanceTab, {
+      global: {
+        ...baseGlobal,
+        provide: { [ThemeSymbol]: createMockTheme('light') },
+      },
+    })
+    const sliders = wrapper.findAll('[data-v-component="VSlider"]')
+    const slider = sliders[0]!
+    await slider.setValue(10)
+    expect(mockStore.attentionIdleMinutes).toBe(10)
+  })
+
+  it('select change mutates store.attentionEffectVariant', async () => {
+    wrapper = mount(AppearanceTab, {
+      global: {
+        ...baseGlobal,
+        provide: { [ThemeSymbol]: createMockTheme('light') },
+      },
+    })
+    const selects = wrapper.findAll('[data-v-component="VSelect"]')
+    const effectSelect = selects[2]!
+    await effectSelect.setValue('rainbow')
+    expect(mockStore.attentionEffectVariant).toBe('rainbow')
+  })
+
   it('list view change mutates store.listView', async () => {
     wrapper = mount(AppearanceTab, {
       global: {
+        ...baseGlobal,
         provide: { [ThemeSymbol]: createMockTheme('light') },
       },
     })

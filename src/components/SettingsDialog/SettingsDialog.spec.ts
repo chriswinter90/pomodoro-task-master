@@ -161,7 +161,8 @@ describe('SettingsDialog', () => {
         },
       })
       // Default tab is appearance, SoundTab should not be mounted (v-if)
-      expect(wrapper.findAll('[data-v-component="VSwitch"]').length).toBe(0)
+      // AppearanceTab has 1 VSwitch (attention toggle); SoundTab would add more
+      expect(wrapper.findAll('[data-v-component="VSwitch"]').length).toBe(1)
     })
   })
 })

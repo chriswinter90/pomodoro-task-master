@@ -20,11 +20,11 @@
 </template>
 
 <script setup lang="ts">
-  import type { BreakMode } from '@/components/composables/breakController.ts'
+  import type { TimerStatus } from '../composables/timerController.ts'
 
   const props = defineProps<{
     displayTimeString: string
-    mode: BreakMode
+    mode: TimerStatus
     countdownRemaining: number
   }>()
 

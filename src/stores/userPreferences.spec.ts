@@ -46,6 +46,21 @@ describe('useUserPreferencesStore', () => {
       expect(typeof store.perTypeSoundEnabled).toBe('object')
       expect(store.perTypeSoundEnabled).not.toBeNull()
     })
+
+    it('has attentionEnabled as a boolean', async () => {
+      const store = await createStore()
+      expect(typeof store.attentionEnabled).toBe('boolean')
+    })
+
+    it('has attentionIdleMinutes as a number', async () => {
+      const store = await createStore()
+      expect(typeof store.attentionIdleMinutes).toBe('number')
+    })
+
+    it('has attentionEffectVariant as a string', async () => {
+      const store = await createStore()
+      expect(typeof store.attentionEffectVariant).toBe('string')
+    })
   })
 
   describe('default values', () => {
@@ -67,6 +82,21 @@ describe('useUserPreferencesStore', () => {
     it('defaults perTypeSoundEnabled to { workEnd: true, breakEnd: true }', async () => {
       const store = await createStore()
       expect(store.perTypeSoundEnabled).toEqual({ workEnd: true, breakEnd: true })
+    })
+
+    it('defaults attentionEnabled to true', async () => {
+      const store = await createStore()
+      expect(store.attentionEnabled).toBe(true)
+    })
+
+    it('defaults attentionIdleMinutes to 5', async () => {
+      const store = await createStore()
+      expect(store.attentionIdleMinutes).toBe(5)
+    })
+
+    it('defaults attentionEffectVariant to "rainbow"', async () => {
+      const store = await createStore()
+      expect(store.attentionEffectVariant).toBe('rainbow')
     })
   })
 
@@ -106,6 +136,24 @@ describe('useUserPreferencesStore', () => {
       const s = await createStore()
       s.theme = 'system' // same as current value
       expect(saveToLocalStorage).not.toHaveBeenCalled()
+    })
+
+    it('persists attentionEnabled change', async () => {
+      const s = await createStore()
+      s.attentionEnabled = false
+      expect(saveToLocalStorage).toHaveBeenCalledWith('taskMasterAttentionEnabled', false)
+    })
+
+    it('persists attentionIdleMinutes change', async () => {
+      const s = await createStore()
+      s.attentionIdleMinutes = 10
+      expect(saveToLocalStorage).toHaveBeenCalledWith('taskMasterAttentionIdleMinutes', 10)
+    })
+
+    it('persists attentionEffectVariant change', async () => {
+      const s = await createStore()
+      s.attentionEffectVariant = 'none'
+      expect(saveToLocalStorage).toHaveBeenCalledWith('taskMasterAttentionEffectVariant', 'none')
     })
   })
 })
