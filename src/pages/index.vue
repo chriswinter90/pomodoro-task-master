@@ -1,7 +1,7 @@
 <template>
   <div class="page-container">
     <div class="title-bar">
-      <h1>Task Master 9000</h1>
+      <h1>Task Master 9001</h1>
       <SettingsDialog v-model="settingsOpen" />
     </div>
     <TaskPanel
