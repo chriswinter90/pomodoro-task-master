@@ -1,6 +1,31 @@
-<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
-<path d="M261.126 140.65L164.624 307.732L256.001 466L377.028 256.5L498.001 47H315.192L261.126 140.65Z" fill="#1697F6"/>
-<path d="M135.027 256.5L141.365 267.518L231.64 111.178L268.731 47H256H14L135.027 256.5Z" fill="#AEDDFF"/>
-<path d="M315.191 47C360.935 197.446 256 466 256 466L164.624 307.732L315.191 47Z" fill="#1867C0"/>
-<path d="M268.731 47C76.0026 47 141.366 267.518 141.366 267.518L268.731 47Z" fill="#7BC6FF"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+    <!-- Dark mode app-icon background -->
+    <rect x="32" y="32" width="448" height="448" rx="96" ry="96" fill="#1E1E24"/>
+
+    <defs>
+        <filter id="softShadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="8" stdDeviation="16" flood-color="#000000" flood-opacity="0.4"/>
+        </filter>
+    </defs>
+
+    <g filter="url(#softShadow)">
+        <!-- Kanban cards -->
+        <rect x="130" y="130" width="70" height="120" rx="18" ry="18" fill="#FF7096"/>
+        <rect x="215" y="100" width="70" height="200" rx="18" ry="18" fill="#4EA8DE"/>
+        <rect x="300" y="150" width="70" height="140" rx="18" ry="18" fill="#64A567"/>
+
+        <!-- Pomodoro timer -->
+        <circle cx="256" cy="300" r="110" fill="#FF477E"/>
+        <circle cx="256" cy="300" r="95" fill="#93003A"/>
+        <circle cx="256" cy="300" r="28" fill="#FF477E"/>
+
+        <!-- Progress arc -->
+        <path d="M256 190 A110 110 0 0 1 366 300"
+              fill="none"
+              stroke="#FFFFFF"
+              stroke-width="14"
+              stroke-linecap="square"
+              stroke-dasharray="25"
+              opacity="0.85"/>
+    </g>
 </svg>
