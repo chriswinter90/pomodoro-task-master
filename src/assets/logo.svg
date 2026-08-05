@@ -15,17 +15,18 @@
         <rect x="300" y="150" width="70" height="140" rx="18" ry="18" fill="#64A567"/>
 
         <!-- Pomodoro timer -->
-        <circle cx="256" cy="300" r="110" fill="#FF477E"/>
-        <circle cx="256" cy="300" r="95" fill="#93003A"/>
-        <circle cx="256" cy="300" r="28" fill="#FF477E"/>
+        <circle cx="256" cy="280" r="110" fill="#FF477E"/>
+        <circle cx="256" cy="280" r="95" fill="#93003A"/>
+        <circle cx="256" cy="280" r="28" fill="#FF477E"/>
 
         <!-- Progress arc -->
-        <path d="M256 190 A110 110 0 0 1 366 300"
+        <path d="M245 170 A110 110 0 0 1 364 306"
               fill="none"
               stroke="#FFFFFF"
               stroke-width="14"
+              stroke-dashoffset=""
               stroke-linecap="square"
-              stroke-dasharray="25"
+              stroke-dasharray="29"
               opacity="0.85"/>
     </g>
 </svg>
