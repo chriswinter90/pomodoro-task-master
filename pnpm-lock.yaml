@@ -64,7 +64,7 @@ importers:
         specifier: ^1.92.1
         version: 1.93.2
       typescript:
-        specifier: ~5.9.2
+        specifier: ^5.9.3
         version: 5.9.3
       unplugin-auto-import:
         specifier: ^20.1.0
