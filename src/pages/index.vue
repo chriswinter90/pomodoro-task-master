@@ -1,7 +1,10 @@
 <template>
   <div class="page-container">
     <div class="title-bar">
-      <h1>Task Master 9001</h1>
+      <div class="d-flex">
+        <v-img class="logo" src="@/assets/logo.svg" inline></v-img>
+        <h1>Task Master 9001</h1>
+      </div>
       <SettingsDialog v-model="settingsOpen" />
     </div>
     <TaskPanel
@@ -35,5 +38,11 @@
     display: flex;
     justify-content: space-between;
     margin: 5px 5px
+  }
+
+  .logo {
+    width: 40px;
+    height: 40px;
+    margin-top: 4px;
   }
 </style>
