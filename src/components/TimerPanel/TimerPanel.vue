@@ -34,7 +34,7 @@
     <AddTimerPanel v-model="showAddTimerPanel" />
     <SnoozePanel v-model="showSnoozePanel" @confirm="handleSnoozeConfirm" />
 
-    <v-dialog v-model="showDeleteDialog" data-test="delete-timer-dialog">
+    <v-dialog class="delete-timer-dialog" v-model="showDeleteDialog" data-test="delete-timer-dialog">
       <v-card width="400">
         <v-card-title>Delete Timer</v-card-title>
         <v-card-text>Are you sure you want to delete this timer?</v-card-text>
@@ -107,5 +107,21 @@
   .timer-list > * {
     width: 100px;
     margin: 10px;
+  }
+
+  .delete-timer-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 999;
+    .v-card {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 20px;
+    }
   }
 </style>
