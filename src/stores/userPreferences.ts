@@ -18,6 +18,11 @@ export type ThemeValue = 'system' | 'light' | 'dark'
 export type ListViewValue = 'list' | 'kanban'
 
 /**
+ * Available attention effects
+ */
+export type AttentionEffectVariant = 'rainbow' | 'none'
+
+/**
  * Full user preferences state shape.
  */
 export interface UserPreferencesState {
@@ -27,7 +32,7 @@ export interface UserPreferencesState {
   perTypeSoundEnabled: Record<SoundTypeStr, boolean>
   attentionEnabled: boolean
   attentionIdleMinutes: number
-  attentionEffectVariant: string
+  attentionEffectVariant: AttentionEffectVariant
 }
 
 const _useUserPreferencesStore = defineStore('userPreferences', {
@@ -49,7 +54,7 @@ const _useUserPreferencesStore = defineStore('userPreferences', {
     ),
     attentionEnabled: loadFromLocalStorage<boolean>('taskMasterAttentionEnabled', () => true),
     attentionIdleMinutes: loadFromLocalStorage<number>('taskMasterAttentionIdleMinutes', () => 5),
-    attentionEffectVariant: loadFromLocalStorage<string>('taskMasterAttentionEffectVariant', () => 'rainbow'),
+    attentionEffectVariant: loadFromLocalStorage<AttentionEffectVariant>('taskMasterAttentionEffectVariant', () => 'rainbow'),
   }),
 })
 

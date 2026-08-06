@@ -3,10 +3,10 @@
 </template>
 
 <script setup lang="ts">
-  export type EffectVariant = 'rainbow'
+  import type { AttentionEffectVariant } from '@/stores/userPreferences.ts'
 
   defineProps<{
-    variant?: EffectVariant
+    variant?: AttentionEffectVariant
   }>()
 </script>
 

@@ -2,7 +2,7 @@
   <div class="page-container">
     <div class="title-bar">
       <div class="d-flex">
-        <v-img class="logo" src="@/assets/logo.svg" inline></v-img>
+        <v-img class="logo" src="@/assets/logo.svg" inline />
         <h1>Task Master 9001</h1>
       </div>
       <SettingsDialog v-model="settingsOpen" />
