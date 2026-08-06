@@ -46,7 +46,12 @@
 <script setup lang="ts">
   import { computed } from 'vue'
   import { useTheme } from 'vuetify'
-  import { type ListViewValue, type ThemeValue, useUserPreferencesStore } from '@/stores/userPreferences'
+  import {
+    type AttentionEffectVariant,
+    type ListViewValue,
+    type ThemeValue,
+    useUserPreferencesStore,
+  } from '@/stores/userPreferences'
 
   const store = useUserPreferencesStore()
   const theme = useTheme()
@@ -106,7 +111,7 @@
 
   const attentionEffectVariantPref = computed({
     get: () => store.attentionEffectVariant,
-    set: (val: string) => {
+    set: (val: AttentionEffectVariant) => {
       store.attentionEffectVariant = val
     },
   })
