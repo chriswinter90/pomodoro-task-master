@@ -98,7 +98,7 @@ export default defineConfig({
             },
           },
           {
-            urlPattern: /.*\.(?:woff2)$/i,
+            urlPattern: /.*\.woff2$/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'font-cache',

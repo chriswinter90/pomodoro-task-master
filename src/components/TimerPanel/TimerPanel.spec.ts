@@ -15,8 +15,12 @@ const mockTimersRef = {
 
 vi.mock('@/stores/timers', () => ({
   useTimersStore: () => ({
-    get timers() { return mockTimersRef.value },
-    get selectedTimer() { return mockTimersRef.value[0] },
+    get timers() {
+      return mockTimersRef.value
+    },
+    get selectedTimer() {
+      return mockTimersRef.value[0]
+    },
     removeTimer: mockRemoveTimer,
     setSelectedTimer: mockSetSelectedTimer,
   }),
@@ -87,9 +91,9 @@ describe('TimerPanel', () => {
 
     const blocks = wrapper.findAllComponents({ name: 'TimerBlock' })
     // All blocks should have showDelete=true since there are 2 timers
-    blocks.forEach(block => {
+    for (const block of blocks) {
       expect(block.props('showDelete')).toBe(true)
-    })
+    }
   })
 
   it('passes showDelete=false to TimerBlocks when only one timer exists', () => {
@@ -110,9 +114,9 @@ describe('TimerPanel', () => {
     })
 
     const blocks = wrapper.findAllComponents({ name: 'TimerBlock' })
-    blocks.forEach(block => {
+    for (const block of blocks) {
       expect(block.props('showDelete')).toBe(false)
-    })
+    }
 
     // Restore
     mockTimersRef.value = original
@@ -136,9 +140,8 @@ describe('TimerPanel', () => {
     blocks[0]!.vm.$emit('delete', 'timer-1')
     await wrapper.vm.$nextTick()
 
-    // Dialog should be open (pendingDeleteId is set)
-    const dialog = wrapper.find('[data-test="delete-timer-dialog"]')
-    expect(dialog.exists()).toBe(true)
+    // Dialog should be open (showDeleteDialog is true)
+    expect((wrapper.vm as any).showDeleteDialog).toBe(true)
   })
 
   it('calls removeTimer on confirm', async () => {
@@ -166,6 +169,37 @@ describe('TimerPanel', () => {
     expect(mockRemoveTimer).toHaveBeenCalledWith('timer-1')
   })
 
+  it('calls removeTimer with correct ID when deleting the selected timer', async () => {
+    // Set up: second timer is selected
+    mockTimersRef.value = [
+      { id: 'timer-1', duration: 900, breakDuration: 300 },
+      { id: 'timer-2', duration: 600, breakDuration: 120 },
+    ]
+
+    wrapper = mount(TimerPanel, {
+      global: {
+        stubs: {
+          TimerBlock: TimerBlockStub,
+          TimerControls: true,
+          TimerDisplay: true,
+          AddTimerPanel: true,
+          SnoozePanel: true,
+        },
+      },
+    })
+
+    // Trigger delete from second block (the selected one)
+    const blocks = wrapper.findAllComponents({ name: 'TimerBlock' })
+    blocks[1]!.vm.$emit('delete', 'timer-2')
+    await wrapper.vm.$nextTick()
+
+    // Click confirm button
+    const confirmBtn = wrapper.find('button[data-test="confirm-delete"]')
+    await confirmBtn.trigger('click')
+
+    expect(mockRemoveTimer).toHaveBeenCalledWith('timer-2')
+  })
+
   it('closes dialog without calling removeTimer on cancel', async () => {
     wrapper = mount(TimerPanel, {
       global: {
@@ -190,8 +224,7 @@ describe('TimerPanel', () => {
 
     expect(mockRemoveTimer).not.toHaveBeenCalled()
 
-    // Dialog should be closed
-    const dialog = wrapper.find('[data-test="delete-timer-dialog"]')
-    expect(dialog.exists()).toBe(false)
+    // Dialog should be closed (showDeleteDialog is false)
+    expect((wrapper.vm as any).showDeleteDialog).toBe(false)
   })
 })

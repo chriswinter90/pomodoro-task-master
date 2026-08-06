@@ -10,7 +10,7 @@
       v-if="showDelete"
       class="delete-btn"
       data-test="delete-timer"
-      @click.stop="$emit('delete', timerId)"
+      @click.stop="emit('delete', timerId)"
     >
       <v-icon size="16">mdi-delete</v-icon>
     </button>
@@ -28,26 +28,14 @@
   import { displayTime } from '@/components/composables/timer.ts'
   import { useTimersStore } from '@/stores/timers.ts'
 
-  const props = defineProps({
-    timerId: {
-      type: String,
-      required: true,
-    },
-    duration: {
-      type: Number,
-      required: true,
-    },
-    breakDuration: {
-      type: Number,
-      required: true,
-    },
-    showDelete: {
-      type: Boolean,
-      default: false,
-    },
-  })
+  const props = defineProps<{
+    timerId: string
+    duration: number
+    breakDuration: number
+    showDelete?: boolean
+  }>()
 
-  defineEmits(['delete'])
+  const emit = defineEmits<{ delete: [timerId: string] }>()
 
   const timers = useTimersStore()
 
@@ -101,6 +89,6 @@
   }
   .timer-block:hover {
     cursor: pointer;
-    background-color: #f0f0f0;
+    background-color: #f0f0f02F;
   }
 </style>
