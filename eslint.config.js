@@ -8,5 +8,6 @@ export default vuetify({
     'perfectionist/sort-imports': 'off',
     'curly': 'off',
     'unicorn/no-array-callback-reference': 'off',
+    'vue/padding-line-between-tags': 'off',
   },
 })

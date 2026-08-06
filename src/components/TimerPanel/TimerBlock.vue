@@ -6,6 +6,15 @@
     }"
     @click="timers.setSelectedTimer(timerId)"
   >
+    <button
+      v-if="showDelete"
+      class="delete-btn"
+      data-test="delete-timer"
+      @click.stop="$emit('delete', timerId)"
+    >
+      <v-icon size="16">mdi-delete</v-icon>
+    </button>
+
     <v-icon size="36">mdi-clock</v-icon>
     {{ timerDisplay }}
     <div class="break-duration">
@@ -32,7 +41,13 @@
       type: Number,
       required: true,
     },
+    showDelete: {
+      type: Boolean,
+      default: false,
+    },
   })
+
+  defineEmits(['delete'])
 
   const timers = useTimersStore()
 
@@ -45,7 +60,24 @@
 </script>
 
 <style scoped lang="scss">
+.delete-btn {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 2px;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
 .timer-block {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;

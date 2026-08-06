@@ -7,6 +7,8 @@
             :timer-id="timer.id"
             :duration="timer.duration"
             :break-duration="timer.breakDuration ?? 300"
+            :show-delete="timers.timers.length > 1"
+            @delete="handleDeleteRequest"
           />
         </template>
         <v-btn class="add-timer-btn h-auto" border="md" color="green" @click="showAddTimerPanel = true">
@@ -31,6 +33,22 @@
     />
     <AddTimerPanel v-model="showAddTimerPanel" />
     <SnoozePanel v-model="showSnoozePanel" @confirm="handleSnoozeConfirm" />
+
+    <v-dialog v-if="pendingDeleteId" data-test="delete-timer-dialog">
+      <v-card width="400">
+        <v-card-title>Delete Timer</v-card-title>
+        <v-card-text>Are you sure you want to delete this timer?</v-card-text>
+        <v-card-actions>
+          <v-btn color="red" data-test="confirm-delete" @click="confirmDelete">
+            <v-icon>mdi-delete</v-icon>
+            Delete
+          </v-btn>
+          <v-btn data-test="cancel-delete" @click="pendingDeleteId = null">
+            Cancel
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -49,6 +67,7 @@
 
   const showAddTimerPanel = ref(false)
   const showSnoozePanel = ref(false)
+  const pendingDeleteId = ref<string | null>(null)
 
   const controller = ref(useTimerController(
     timers.selectedTimer ?? timers.timers[0]!,
@@ -62,6 +81,17 @@
 
   function handleSnoozeConfirm(duration: number) {
     controller.value.snooze(duration)
+  }
+
+  function handleDeleteRequest(id: string) {
+    pendingDeleteId.value = id
+  }
+
+  function confirmDelete() {
+    if (pendingDeleteId.value) {
+      timers.removeTimer(pendingDeleteId.value)
+      pendingDeleteId.value = null
+    }
   }
 </script>
 
