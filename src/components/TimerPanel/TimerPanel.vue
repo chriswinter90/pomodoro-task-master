@@ -7,6 +7,8 @@
             :timer-id="timer.id"
             :duration="timer.duration"
             :break-duration="timer.breakDuration ?? 300"
+            :show-delete="timers.timers.length > 1"
+            @delete="handleDeleteRequest"
           />
         </template>
         <v-btn class="add-timer-btn h-auto" border="md" color="green" @click="showAddTimerPanel = true">
@@ -31,6 +33,22 @@
     />
     <AddTimerPanel v-model="showAddTimerPanel" />
     <SnoozePanel v-model="showSnoozePanel" @confirm="handleSnoozeConfirm" />
+
+    <v-dialog class="delete-timer-dialog" v-model="showDeleteDialog" data-test="delete-timer-dialog">
+      <v-card width="400">
+        <v-card-title>Delete Timer</v-card-title>
+        <v-card-text>Are you sure you want to delete this timer?</v-card-text>
+        <v-card-actions>
+          <v-btn color="red" data-test="confirm-delete" @click="confirmDelete">
+            <v-icon>mdi-delete</v-icon>
+            Delete
+          </v-btn>
+          <v-btn data-test="cancel-delete" @click="cancelDelete">
+            Cancel
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </div>
 </template>
 
@@ -49,19 +67,39 @@
 
   const showAddTimerPanel = ref(false)
   const showSnoozePanel = ref(false)
+  const showDeleteDialog = ref(false)
+  const pendingDeleteId = ref<string | null>(null)
 
   const controller = ref(useTimerController(
     timers.selectedTimer ?? timers.timers[0]!,
   ))
 
-  watch(() => timers.selectedTimer, selectedTimer => {
-    if (!selectedTimer) return
+  watch(() => timers.selectedTimer, (selectedTimer) => {
     controller.value.dispose()
+    if (!selectedTimer) return
     controller.value = useTimerController(selectedTimer)
   })
 
   function handleSnoozeConfirm(duration: number) {
     controller.value.snooze(duration)
+  }
+
+  function handleDeleteRequest(id: string) {
+    pendingDeleteId.value = id
+    showDeleteDialog.value = true
+  }
+
+  function confirmDelete() {
+    if (pendingDeleteId.value) {
+      timers.removeTimer(pendingDeleteId.value)
+      pendingDeleteId.value = null
+    }
+    showDeleteDialog.value = false
+  }
+
+  function cancelDelete() {
+    pendingDeleteId.value = null
+    showDeleteDialog.value = false
   }
 </script>
 
@@ -69,5 +107,21 @@
   .timer-list > * {
     width: 100px;
     margin: 10px;
+  }
+
+  .delete-timer-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 999;
+    .v-card {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 20px;
+    }
   }
 </style>
