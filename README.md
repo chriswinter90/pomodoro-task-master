@@ -19,7 +19,7 @@ A simple task management application inspired by the Pomodoro technique, designe
     - If on customize length of inactivity time
   - Light mode/dark mode (default dark)
   - Todo List or Kanban (default Kanban)
+- [x] Turn into desktop application (PWA?)
 - [ ] UI/UX Fixes?
 - [ ] Playwright tests
 - [ ] Accessibility?
-- [ ] Turn into desktop application (PWA?)
