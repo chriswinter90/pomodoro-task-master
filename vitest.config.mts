@@ -1,6 +1,6 @@
 import AutoImport from 'unplugin-auto-import/vite'
 import Vue from '@vitejs/plugin-vue'
-import { VueRouterAutoImports } from 'unplugin-vue-router'
+import { VueRouterAutoImports } from 'vue-router/unplugin'
 import { defineConfig } from 'vitest/config'
 import { fileURLToPath, URL } from 'node:url'
 
