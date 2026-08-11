@@ -1,7 +1,8 @@
 # Pomodoro-ish Task Master
 A simple task management application inspired by the Pomodoro technique, designed to help users stay focused and productive.
 
-
+## Try it out
+https://chriswinter90.github.io/pomodoro-task-master/
 
 ## Planned Feature Ideas
 - [x] Task list with completion status, add/remove tasks
