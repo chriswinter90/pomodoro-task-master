@@ -3,6 +3,8 @@ A simple task management application inspired by the Pomodoro technique, designe
 
 ## Try it out
 https://chriswinter90.github.io/pomodoro-task-master/
+<img width="3178" height="1434" alt="image" src="https://github.com/user-attachments/assets/35d1026d-b854-4453-8405-9cb8da2524b2" />
+
 
 ## Planned Feature Ideas
 - [x] Task list with completion status, add/remove tasks
