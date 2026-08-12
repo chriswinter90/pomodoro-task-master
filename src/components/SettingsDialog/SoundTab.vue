@@ -64,17 +64,28 @@
       >
         Save
       </v-btn>
+
+      <v-btn
+        :data-test="'preview-toggle'"
+        :color="isTesting(soundType) ? 'error' : undefined"
+        :prepend-icon="isTesting(soundType) ? 'mdi-stop-circle' : 'mdi-play-circle'"
+        variant="tonal"
+        class="mt-2 ml-2"
+        @click="previewHandler(soundType)"
+      >
+        {{ isTesting(soundType) ? 'Stop' : 'Test' }}
+      </v-btn>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-  import { computed, reactive } from 'vue'
+  import { computed, onScopeDispose, reactive, ref, watch } from 'vue'
   import { type SoundTypeStr, useUserPreferencesStore } from '@/stores/userPreferences'
   import { type SoundConfig, SoundType, useSound } from '@/components/composables/sound'
 
   const store = useUserPreferencesStore()
-  const { getConfig, setConfig } = useSound()
+  const { getConfig, setConfig, playConfig } = useSound()
 
   const soundTypes = Object.values(SoundType)
 
@@ -130,4 +141,63 @@
     }
     setConfig(type, config)
   }
+
+  // Preview toggle state
+  const testingType = ref<SoundType | null>(null)
+  const currentHandle = ref<ReturnType<typeof playConfig> | null>(null)
+
+  function isTesting(type: SoundType): boolean {
+    return testingType.value === type
+  }
+
+  // Watch the handle's isPlaying ref so the button resets to "Test" when playback ends
+  let unwatchHandle: (() => void) | null = null
+  function watchHandle(handle: ReturnType<typeof playConfig>): void {
+    unwatchHandle = watch(
+      handle.isPlaying,
+      (playing) => {
+        if (!playing) {
+          testingType.value = null
+          currentHandle.value = null
+        }
+      },
+    )
+  }
+
+  function previewHandler(type: SoundType) {
+    if (testingType.value === type) {
+      // Stop current preview
+      currentHandle.value?.stop()
+      testingType.value = null
+      currentHandle.value = null
+      unwatchHandle?.()
+      unwatchHandle = null
+      return
+    }
+
+    // Stop any other playing preview before starting a new one
+    currentHandle.value?.stop()
+    unwatchHandle?.()
+    unwatchHandle = null
+
+    // Build config from current reactive state (playConfig clamps frequencies internally)
+    const frequencies = soundFreqs[type].filter(f => !isNaN(f))
+
+    if (frequencies.length === 0) return
+
+    const config: SoundConfig = {
+      frequencies,
+      noteDuration: soundDurations[type],
+      label: getSoundLabel(type),
+    }
+
+    const handle = playConfig(config)
+    currentHandle.value = handle
+    testingType.value = type
+    watchHandle(handle)
+  }
+
+  onScopeDispose(() => {
+    unwatchHandle?.()
+  })
 </script>

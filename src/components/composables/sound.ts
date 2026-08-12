@@ -1,4 +1,4 @@
-import { computed, type Ref } from 'vue'
+import { computed, ref, type Ref } from 'vue'
 import { loadFromLocalStorage, saveToLocalStorage } from '@/stores/persist'
 import { useUserPreferencesStore } from '@/stores/userPreferences'
 
@@ -11,6 +11,11 @@ export interface SoundConfig {
   frequencies: number[]
   noteDuration: number
   label: string
+}
+
+export interface SoundPlaybackHandle {
+  stop: () => void
+  isPlaying: Ref<boolean>
 }
 
 const defaultConfigs: Record<SoundType, SoundConfig> = {
@@ -33,6 +38,7 @@ export function useSound(): {
   getConfig: (type: SoundType) => SoundConfig
   setConfig: (type: SoundType, config: SoundConfig) => void
   soundEnabled: Ref<boolean>
+  playConfig: (config: SoundConfig) => SoundPlaybackHandle
 } {
   const store = useUserPreferencesStore()
   const soundEnabled = computed<boolean>({
@@ -94,32 +100,99 @@ export function useSound(): {
       const ctx = new AudioContextClass()
       ctx.resume()
 
-      let time = ctx.currentTime
-
-      for (const freq of config.frequencies) {
-        const osc = ctx.createOscillator()
-        const gain = ctx.createGain()
-
-        osc.type = 'sine'
-        osc.frequency.setValueAtTime(freq, time)
-
-        gain.gain.setValueAtTime(0.3, time)
-        gain.gain.exponentialRampToValueAtTime(0.001, time + config.noteDuration / 1000)
-
-        osc.connect(gain)
-        gain.connect(ctx.destination)
-
-        osc.start(time)
-        osc.stop(time + config.noteDuration / 1000)
-
-        time += config.noteDuration / 1000
-      }
+      const endTime = playTone(config, ctx)
 
       // Close the context after all notes have finished playing
-      const lastNoteMs = time * 1000 + 100
+      const lastNoteMs = endTime * 1000 + 100
       setTimeout(() => ctx.close(), lastNoteMs)
     } catch {
       // Graceful no-op if Web Audio API fails
+    }
+  }
+
+  // Schedules all notes from config on the given AudioContext.
+  // Returns the scheduled end time in seconds (AudioContext timeline).
+  function playTone(config: SoundConfig, ctx: AudioContext): number {
+    let time = ctx.currentTime
+
+    for (const freq of config.frequencies) {
+      const osc = ctx.createOscillator()
+      const gain = ctx.createGain()
+
+      osc.type = 'sine'
+      osc.frequency.setValueAtTime(freq, time)
+
+      gain.gain.setValueAtTime(0.3, time)
+      gain.gain.exponentialRampToValueAtTime(0.001, time + config.noteDuration / 1000)
+
+      osc.connect(gain)
+      gain.connect(ctx.destination)
+
+      osc.start(time)
+      osc.stop(time + config.noteDuration / 1000)
+
+      time += config.noteDuration / 1000
+    }
+
+    return time
+  }
+
+  function playConfig(config: SoundConfig): SoundPlaybackHandle {
+    // Clamp frequencies to audible range
+    const clampedFrequencies = config.frequencies.map(f => Math.max(20, Math.min(20000, f)))
+    const clampedConfig: SoundConfig = {
+      ...config,
+      frequencies: clampedFrequencies,
+    }
+
+    // Handle empty frequency array
+    if (clampedConfig.frequencies.length === 0) {
+      return {
+        stop: () => {},
+        isPlaying: ref(false),
+      }
+    }
+
+    const AudioContextClass = window.AudioContext
+    if (!AudioContextClass) {
+      return {
+        stop: () => {},
+        isPlaying: ref(false),
+      }
+    }
+
+    const isPlaying = ref(true)
+    let timeoutId: ReturnType<typeof setTimeout> | null = null
+
+    try {
+      const ctx = new AudioContextClass()
+      ctx.resume()
+
+      const endTime = playTone(clampedConfig, ctx)
+
+      // Schedule auto-close after all notes finish
+      const lastNoteMs = endTime * 1000 + 100
+      timeoutId = setTimeout(() => {
+        ctx.close()
+        isPlaying.value = false
+      }, lastNoteMs)
+
+      return {
+        stop: () => {
+          if (timeoutId !== null) {
+            clearTimeout(timeoutId)
+            timeoutId = null
+          }
+          ctx.close()
+          isPlaying.value = false
+        },
+        isPlaying,
+      }
+    } catch {
+      return {
+        stop: () => {},
+        isPlaying: ref(false),
+      }
     }
   }
 
@@ -132,5 +205,5 @@ export function useSound(): {
     saveToLocalStorage(STORAGE_KEY, configs)
   }
 
-  return { playSound, getConfig, setConfig, soundEnabled }
+  return { playSound, getConfig, setConfig, soundEnabled, playConfig }
 }
