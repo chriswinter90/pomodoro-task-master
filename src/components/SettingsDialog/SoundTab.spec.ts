@@ -1,6 +1,6 @@
 import type { VueWrapper } from '@vue/test-utils'
 import { mount } from '@vue/test-utils'
-import { reactive } from 'vue'
+import { reactive, ref } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import SoundTab from './SoundTab.vue'
 
@@ -33,12 +33,19 @@ const mockGetConfig = vi.fn().mockReturnValue({
   label: 'Work End',
 })
 const mockSetConfig = vi.fn()
+// Track the last returned handle for tests that need to simulate playback ending
+let lastHandle: { stop: ReturnType<typeof vi.fn>; isPlaying: ReturnType<typeof ref<boolean>> } | null = null
+const mockPlayConfig = vi.fn().mockImplementation(() => {
+  lastHandle = { stop: vi.fn(), isPlaying: ref(true) }
+  return lastHandle
+})
 
 vi.mock('@/components/composables/sound', () => ({
   SoundType: { WorkEnd: 'workEnd', BreakEnd: 'breakEnd' },
   useSound: () => ({
     getConfig: mockGetConfig,
     setConfig: mockSetConfig,
+    playConfig: mockPlayConfig,
     soundEnabled: { value: true },
   }),
 }))
@@ -181,5 +188,103 @@ describe('SoundTab', () => {
       await saveBtn.trigger('click')
       expect(mockSetConfig).toHaveBeenCalled()
     }
+  })
+
+  // --- Preview toggle tests ---
+
+  it('renders preview toggle button per sound type', () => {
+    wrapper = mount(SoundTab, {
+      global: {
+        provide: { [ThemeSymbol]: createMockTheme('light') },
+      },
+    })
+    const toggleButtons = wrapper.findAll('[data-test="preview-toggle"]')
+    expect(toggleButtons.length).toBeGreaterThanOrEqual(2)
+  })
+
+  it('button shows "Test" label when not playing', () => {
+    wrapper = mount(SoundTab, {
+      global: {
+        provide: { [ThemeSymbol]: createMockTheme('light') },
+      },
+    })
+    const toggleButtons = wrapper.findAll('[data-test="preview-toggle"]')
+    for (const btn of toggleButtons) {
+      expect(btn.text()).toContain('Test')
+    }
+  })
+
+  it('clicking "Test" calls playConfig with config built from current soundFreqs/soundDurations', async () => {
+    wrapper = mount(SoundTab, {
+      global: {
+        provide: { [ThemeSymbol]: createMockTheme('light') },
+      },
+    })
+    const toggleButtons = wrapper.findAll('[data-test="preview-toggle"]')
+    await toggleButtons[0]!.trigger('click')
+    expect(mockPlayConfig).toHaveBeenCalled()
+    const callArg = mockPlayConfig.mock.calls[0]![0] as { frequencies: number[]; noteDuration: number; label: string }
+    expect(callArg.frequencies).toEqual([523.25, 659.25, 783.99])
+    expect(callArg.noteDuration).toBe(150)
+  })
+
+  it('button shows "Stop" label after starting a preview', async () => {
+    wrapper = mount(SoundTab, {
+      global: {
+        provide: { [ThemeSymbol]: createMockTheme('light') },
+      },
+    })
+    const toggleButtons = wrapper.findAll('[data-test="preview-toggle"]')
+    await toggleButtons[0]!.trigger('click')
+    // After clicking Test, testingType is set immediately so button shows "Stop"
+    const updatedButtons = wrapper.findAll('[data-test="preview-toggle"]')
+    expect(updatedButtons[0]!.text()).toContain('Stop')
+  })
+
+  it('button resets to "Test" when playback ends naturally', async () => {
+    wrapper = mount(SoundTab, {
+      global: {
+        provide: { [ThemeSymbol]: createMockTheme('light') },
+      },
+    })
+    const toggleButtons = wrapper.findAll('[data-test="preview-toggle"]')
+    await toggleButtons[0]!.trigger('click')
+    // Verify button shows "Stop" first
+    expect(wrapper.findAll('[data-test="preview-toggle"]')[0]!.text()).toContain('Stop')
+    // Simulate playback ending: isPlaying goes from true to false
+    lastHandle!.isPlaying.value = false
+    await wrapper.vm.$nextTick()
+    const updatedButtons = wrapper.findAll('[data-test="preview-toggle"]')
+    expect(updatedButtons[0]!.text()).toContain('Test')
+  })
+
+  it('clicking "Stop" calls handle.stop() and resets state', async () => {
+    wrapper = mount(SoundTab, {
+      global: {
+        provide: { [ThemeSymbol]: createMockTheme('light') },
+      },
+    })
+    // First click: start preview
+    const toggleButtons = wrapper.findAll('[data-test="preview-toggle"]')
+    await toggleButtons[0]!.trigger('click')
+    const handleStop = lastHandle!.stop
+    // Second click: stop preview
+    await toggleButtons[0]!.trigger('click')
+    expect(handleStop).toHaveBeenCalled()
+    // Button should be back to "Test"
+    const updatedButtons = wrapper.findAll('[data-test="preview-toggle"]')
+    expect(updatedButtons[0]!.text()).toContain('Test')
+  })
+
+  it('preview plays even when global sound toggle is off', async () => {
+    mockStore.soundEnabled = false
+    wrapper = mount(SoundTab, {
+      global: {
+        provide: { [ThemeSymbol]: createMockTheme('light') },
+      },
+    })
+    const toggleButtons = wrapper.findAll('[data-test="preview-toggle"]')
+    await toggleButtons[0]!.trigger('click')
+    expect(mockPlayConfig).toHaveBeenCalled()
   })
 })

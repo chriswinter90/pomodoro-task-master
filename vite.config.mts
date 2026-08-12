@@ -119,7 +119,7 @@ export default defineConfig({
   optimizeDeps: {
     exclude: [
       'vuetify',
-      'vue-router'
+      'vue-router',
     ],
   },
   define: { 'process.env': {} },
