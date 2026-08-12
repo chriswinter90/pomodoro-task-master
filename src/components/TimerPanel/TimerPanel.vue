@@ -18,13 +18,11 @@
     </div>
     <TimerControls
       :mode="timerState.mode"
-      :sound-enabled="sound.soundEnabled"
       @start="controller.start()"
       @stop="controller.stop()"
       @reset="controller.reset()"
       @snooze="showSnoozePanel = true"
       @skip-break="controller.skipBreak()"
-      @toggle-sound="sound.soundEnabled.value = !sound.soundEnabled.value"
     />
     <TimerDisplay
       :display-time-string="controller.displayTimeString"
@@ -56,14 +54,11 @@
   import { useTimersStore } from '@/stores/timers.ts'
   import { useTimerStateStore } from '@/stores/timerState.ts'
   import { useTimerController } from '../composables/timerController.ts'
-  import { useSound } from '@/components/composables/sound.ts'
   import AddTimerPanel from '@/components/TimerPanel/AddTimerPanel.vue'
   import SnoozePanel from '@/components/TimerPanel/SnoozePanel.vue'
 
   const timers = useTimersStore()
   const timerState = useTimerStateStore()
-
-  const sound = useSound()
 
   const showAddTimerPanel = ref(false)
   const showSnoozePanel = ref(false)
